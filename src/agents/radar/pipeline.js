@@ -105,7 +105,7 @@ export async function buildNewsDigest() {
 
   if (valid.length === 0) return { text: null, used: [] };
 
-  const lines = [`🤖 <b>${uzDate()} · AI Digest</b>`, ''];
+  const lines = [`🗞 <b>Rita · AI Digest</b> · ${uzDate()}`, ''];
   valid.forEach((p, i) => {
     const src = items[p.index];
     lines.push(`<b>${i + 1}. ${esc(p.title_uz)}</b>`);
@@ -183,7 +183,7 @@ export async function buildIdeaPost() {
   }
 
   const text = [
-    `💡 <b>Kunning g'oyasi</b> · ${uzDate()}`,
+    `💡 <b>Rita · Kunning g'oyasi</b> · ${uzDate()}`,
     '',
     `<b>${esc(idea.title_uz)}</b>`,
     '',
