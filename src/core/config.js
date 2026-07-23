@@ -22,6 +22,24 @@ export const config = {
     effort: process.env.LLM_EFFORT || 'medium',
   },
 
+  // Interaktiv suhbat: guruhda "Rita/Layla/Debra, ..." deb chaqirish
+  chat: {
+    enabled: process.env.ENABLE_CHAT !== '0',
+    groupChatId: process.env.GROUP_CHAT_ID || '',
+    // persona kaliti → bot tokeni
+    tokens: {
+      rita: process.env.RADAR_BOT_TOKEN,
+      layla: process.env.LINGO_BOT_TOKEN,
+      debra: process.env.KOTIB_BOT_TOKEN,
+    },
+  },
+
+  // Gemini — ovozli xabarni matnga o'girish (bepul)
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY || '',
+    model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  },
+
   radar: {
     token: req('RADAR_BOT_TOKEN'),
     chatId: req('GROUP_CHAT_ID'),
