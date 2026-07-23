@@ -40,6 +40,15 @@ export const config = {
     model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   },
 
+  // Debra — Telegram Business (lichka xabarlari)
+  business: {
+    autoReply: process.env.BUSINESS_AUTOREPLY === '1',
+    ownerId: Number(process.env.BUSINESS_OWNER_ID) || null,
+    autoReplyText:
+      process.env.BUSINESS_AUTOREPLY_TEXT ||
+      'Salom! Men Dexterning AI yordamchisiman 🤖 Xabaringizni unga yetkazdim — tez orada javob beradi. Shoshilinch bo\'lsa shu yerga yozib qoldiring.',
+  },
+
   radar: {
     token: req('RADAR_BOT_TOKEN'),
     chatId: req('GROUP_CHAT_ID'),

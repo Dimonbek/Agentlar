@@ -1,6 +1,7 @@
 import { startRadar, jobs } from './agents/radar/index.js';
 import { personas } from './core/personas.js';
 import { createChatBot } from './core/interactive.js';
+import { attachBusiness, BUSINESS_UPDATES } from './agents/kotib/business.js';
 import { config } from './core/config.js';
 import { log } from './core/logger.js';
 
@@ -31,9 +32,18 @@ if (config.chat.enabled && config.chat.groupChatId) {
       continue;
     }
     const bot = createChatBot(persona, token);
-    bot.launch().catch((e) => log.error(`${persona.name} launch xato:`, e.message));
+
+    // Debra — guruh + Business (lichka) rejimida
+    const launchOpts = {};
+    if (persona.agent === 'kotib') {
+      attachBusiness(bot);
+      launchOpts.allowedUpdates = BUSINESS_UPDATES;
+    }
+
+    bot.launch(launchOpts).catch((e) => log.error(`${persona.name} launch xato:`, e.message));
     bots.push(bot);
-    log.info(`${persona.name} ${persona.emoji} tinglayapti (${persona.role})`);
+    const extra = persona.agent === 'kotib' ? ' + Business (lichka)' : '';
+    log.info(`${persona.name} ${persona.emoji} tinglayapti (${persona.role})${extra}`);
   }
   if (!config.gemini.apiKey) {
     log.warn('GEMINI_API_KEY yo\'q — ovozli xabarlar tushunilmaydi (faqat matn)');
