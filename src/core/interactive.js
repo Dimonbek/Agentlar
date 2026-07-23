@@ -12,10 +12,9 @@ function stripTrigger(text, persona) {
   return text.replace(re, '').trim();
 }
 
-/** Telegram ovozli/audio xabarni yuklab, Gemini bilan matnga o'giradi. */
-async function voiceToText(ctx) {
-  const v = ctx.message.voice || ctx.message.audio;
-  if (!v) return '';
+/** Telegram voice/audio obyektini yuklab, Gemini bilan matnga o'giradi. */
+async function voiceToText(ctx, v) {
+  if (!v || !config.gemini.apiKey) return '';
   const link = await ctx.telegram.getFileLink(v.file_id);
   const res = await fetch(link.href);
   const buf = Buffer.from(await res.arrayBuffer());
@@ -24,7 +23,10 @@ async function voiceToText(ctx) {
 
 /**
  * Bitta persona uchun tinglaydigan bot yaratadi.
- * Faqat o'z chaqiruv-so'zi bilan boshlangan xabarlarga javob beradi.
+ * Javob beradi, agar:
+ *  - xabar "Rita/Layla/Debra, ..." bilan boshlansa, YOKI
+ *  - foydalanuvchi shu botning xabariga reply qilsa.
+ * Reply qilingan xabar (matn yoki ovoz) kontekst sifatida qo'shiladi.
  */
 export function createChatBot(persona, token) {
   const bot = new Telegraf(token);
@@ -33,36 +35,59 @@ export function createChatBot(persona, token) {
     try {
       if (String(ctx.chat.id) !== String(config.chat.groupChatId)) return;
 
-      let text = ctx.message.text || ctx.message.caption || '';
-      const hasVoice = !!(ctx.message.voice || ctx.message.audio);
+      const msg = ctx.message;
+      const replyTo = msg.reply_to_message;
+      const myId = ctx.botInfo?.id;
+      const isReplyToMe = !!(replyTo && myId && replyTo.from?.id === myId);
 
+      // Asosiy xabar matni (ovoz bo'lsa transkripsiya)
+      let text = msg.text || msg.caption || '';
+      const hasVoice = !!(msg.voice || msg.audio);
       if (hasVoice) {
-        if (!config.gemini.apiKey) return; // ovoz hali sozlanmagan
-        text = await voiceToText(ctx);
-        if (!text) return;
+        text = await voiceToText(ctx, msg.voice || msg.audio);
+        if (!text && !isReplyToMe) return;
       }
 
+      // Bu xabar menga tegishlimi?
       const called = detectPersona(text);
-      if (!called || called.agent !== persona.agent) return; // bu chaqiruv meniki emas
+      let query;
+      if (called && called.agent === persona.agent) {
+        query = stripTrigger(text, called);
+      } else if (isReplyToMe) {
+        query = text; // mening xabarimga reply — chaqiruvsiz javob beraman
+      } else {
+        return; // chaqiruv meniki emas va reply ham menga emas
+      }
 
-      const query = stripTrigger(text, called);
-      if (!query) {
+      // Reply qilingan xabarni kontekstga qo'shamiz (ovozga "eshit va ayt" shu yerda ishlaydi)
+      let context = '';
+      if (replyTo) {
+        const rv = replyTo.voice || replyTo.audio;
+        if (rv) {
+          const rt = await voiceToText(ctx, rv);
+          if (rt) context = `\n\n[Yuqoridagi ovozli xabar matni]:\n${rt}`;
+        } else if (!isReplyToMe && (replyTo.text || replyTo.caption)) {
+          context = `\n\n[Javob berilgan xabar]:\n${replyTo.text || replyTo.caption}`;
+        }
+      }
+
+      const fullQuery = (query + context).trim();
+      if (!fullQuery) {
         await ctx.reply(`${persona.emoji} Labbay, eshitaman. Nima kerak?`, {
-          reply_parameters: { message_id: ctx.message.message_id },
+          reply_parameters: { message_id: msg.message_id },
         });
         return;
       }
 
-      log.info(`${persona.name} <- "${query.slice(0, 60)}"${hasVoice ? ' (ovoz)' : ''}`);
+      log.info(`${persona.name} <- "${query.slice(0, 50)}"${hasVoice ? ' (ovoz)' : ''}${context ? ' +kontekst' : ''}`);
       await ctx.sendChatAction('typing');
 
-      const answer = await respond({ persona, userText: query });
-      // Ovozdan kelgan bo'lsa, nima eshitganini ko'rsatib qo'yamiz
+      const answer = await respond({ persona, userText: fullQuery });
       const prefix = hasVoice ? `🎤 «${text.slice(0, 120)}»\n\n` : '';
 
       for (const chunk of splitMessage(prefix + answer)) {
         await ctx.reply(chunk, {
-          reply_parameters: { message_id: ctx.message.message_id },
+          reply_parameters: { message_id: msg.message_id },
           link_preview_options: { is_disabled: true },
         });
       }

@@ -46,7 +46,7 @@ export const config = {
     ownerId: Number(process.env.BUSINESS_OWNER_ID) || null,
     autoReplyText:
       process.env.BUSINESS_AUTOREPLY_TEXT ||
-      'Salom! Men Dexterning AI yordamchisiman 🤖 Xabaringizni unga yetkazdim — tez orada javob beradi. Shoshilinch bo\'lsa shu yerga yozib qoldiring.',
+      'Salom! Men Dilmurodning AI yordamchisiman 🤖 Xabaringizni unga yetkazdim — tez orada javob beradi. Shoshilinch bo\'lsa shu yerga yozib qoldiring.',
   },
 
   radar: {
