@@ -1,0 +1,24 @@
+{
+  "name": "agentlar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Dilmurod uchun shaxsiy Telegram agentlari: Radar (AI yangiliklar + g'oyalar), Lingo (ingliz tili), Kotib (shaxsiy yordamchi)",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "radar:news": "node src/index.js --once=radar:news",
+    "radar:idea": "node src/index.js --once=radar:idea"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "better-sqlite3": "^12.2.0",
+    "dotenv": "^17.2.1",
+    "fast-xml-parser": "^5.2.5",
+    "node-cron": "^4.2.1",
+    "telegraf": "^4.16.3"
+  }
+}
