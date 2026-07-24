@@ -51,6 +51,18 @@ db.exec(`
     owner_id    INTEGER,
     conn_id     TEXT
   );
+
+  -- Suhbat xotirasi: har agent o'z suhbatini eslab qoladi
+  CREATE TABLE IF NOT EXISTS chat_history (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    agent     TEXT NOT NULL,
+    chat_id   TEXT NOT NULL,
+    role      TEXT NOT NULL,
+    content   TEXT NOT NULL,
+    at        INTEGER NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_hist ON chat_history(agent, chat_id, id);
 `);
 
 /** URL'ni normallashtirib hash qiladi (utm_* va shunga o'xshash chiqindilarni tashlaydi). */
@@ -150,4 +162,37 @@ export function saveBizConn(ownerId, connId) {
 }
 export function getBizConn() {
   return _getConn.get() ?? {};
+}
+
+// ---- Suhbat xotirasi ----
+
+const _addHist = db.prepare(
+  'INSERT INTO chat_history (agent, chat_id, role, content, at) VALUES (?, ?, ?, ?, ?)',
+);
+const _getHist = db.prepare(
+  `SELECT role, content FROM chat_history
+   WHERE agent = ? AND chat_id = ?
+   ORDER BY id DESC LIMIT ?`,
+);
+const _trimHist = db.prepare(
+  `DELETE FROM chat_history
+   WHERE agent = ? AND chat_id = ? AND id NOT IN (
+     SELECT id FROM chat_history WHERE agent = ? AND chat_id = ? ORDER BY id DESC LIMIT ?
+   )`,
+);
+
+const KEEP = 60; // DB'da saqlanadigan oxirgi xabarlar soni (agent+chat uchun)
+
+export function addHistory(agent, chatId, role, content) {
+  _addHist.run(agent, String(chatId), role, content, Date.now());
+  _trimHist.run(agent, String(chatId), agent, String(chatId), KEEP);
+}
+
+/** Oxirgi N xabarni (eskidan yangiga) qaytaradi — LLM'ga kontekst sifatida beriladi. */
+export function getHistory(agent, chatId, limit = 30) {
+  return _getHist.all(agent, String(chatId), limit).reverse();
+}
+
+export function clearHistory(agent, chatId) {
+  db.prepare('DELETE FROM chat_history WHERE agent = ? AND chat_id = ?').run(agent, String(chatId));
 }

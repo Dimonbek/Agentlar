@@ -4,7 +4,11 @@ import { detectPersona } from './personas.js';
 import { transcribe } from './gemini.js';
 import { respond } from './brain.js';
 import { splitMessage } from './telegram.js';
+import { addHistory, getHistory } from './db.js';
 import { log } from './logger.js';
+
+/** LLM'ga beriladigan suhbat tarixi uzunligi (15 juftlik ≈ 30 xabar). */
+const HISTORY_LIMIT = 30;
 
 /** Chaqiruv so'zini matn boshidan olib tashlaydi: "Rita, salom" -> "salom". */
 function stripTrigger(text, persona) {
@@ -71,18 +75,24 @@ export function createChatBot(persona, token) {
         }
       }
 
-      const fullQuery = (query + context).trim();
+      let fullQuery = (query + context).trim();
+      // Yolg'iz chaqirilgan bo'lsa ham qolipli javob emas — modeldan tabiiy javob olamiz
       if (!fullQuery) {
-        await ctx.reply(`${persona.emoji} Labbay, eshitaman. Nima kerak?`, {
-          reply_parameters: { message_id: msg.message_id },
-        });
-        return;
+        fullQuery = '(Dexter seni ismingni aytib chaqirdi, hali hech narsa so\'ramadi. ' +
+          'Bir og\'iz tabiiy javob ber — har safar boshqacha, qolipsiz.)';
       }
 
       log.info(`${persona.name} <- "${query.slice(0, 50)}"${hasVoice ? ' (ovoz)' : ''}${context ? ' +kontekst' : ''}`);
       await ctx.sendChatAction('typing');
 
-      const answer = await respond({ persona, userText: fullQuery });
+      const chatId = ctx.chat.id;
+      const history = getHistory(persona.agent, chatId, HISTORY_LIMIT);
+      const answer = await respond({ persona, userText: fullQuery, history });
+
+      // Xotiraga yozamiz — keyingi safar shu suhbatni eslaydi
+      addHistory(persona.agent, chatId, 'user', fullQuery);
+      addHistory(persona.agent, chatId, 'assistant', answer);
+
       const prefix = hasVoice ? `🎤 «${text.slice(0, 120)}»\n\n` : '';
 
       for (const chunk of splitMessage(prefix + answer)) {

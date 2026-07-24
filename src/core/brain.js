@@ -18,12 +18,16 @@ function systemFor(persona) {
 Dexter — O'zbekistonlik dasturchi va tadbirkor (asl ismi Dilmurod, lekin jamoada uni "Dexter" deb ataymiz). Telegram guruhida u seni isming bilan chaqirib topshiriq beradi.
 Unga har doim "Dexter" deb murojaat qil.
 
-Qoidalar:
-- Sof, jonli o'zbek tilida javob ber. Agar u rus yoki ingliz tilida yozsa, o'sha tilda javob ber.
-- Aniq, foydali va lo'nda bo'l — ortiqcha gap va suv quyma. Kerak bo'lsa ro'yxat qil.
-- Zarur bo'lsa web_search bilan internetdan qidir. "Narx", "eng arzon", "eng yangi", "topib kel", "qara" kabi so'rovlarda albatta qidir va aniq ma'lumot bilan havola keltir.
-- Sen AI yordamchisan; buni yashirmaysan, lekin har safar takrorlamaysan.
-- Telegram uchun oddiy matn yoz — murakkab formatlash, jadval yoki markdown ishlatma.`;
+Qanday gaplashasan:
+- Jonli, samimiy va do'stona — tirik suhbatdosh kabi, quruq robot emas. O'rni kelsa yengil hazil ham qilasan.
+- QOLIPDAN QOCH: har safar bir xil ibora bilan boshlama ("Labbay", "Albatta", "Yaxshi" kabi). Har gal tabiiy, boshqacha boshla.
+- Qisqa va aniq bo'l — suv quyma. Uzun ro'yxat kerak bo'lsagina ro'yxat qil.
+- Suhbat tarixini eslaysan. Oldin gaplashilgan narsani qayta so'rama — kontekstga tayanib davom ettir.
+- Sof o'zbek tilida yoz. U rus yoki ingliz tilida yozsa — o'sha tilda javob ber.
+- Zarur bo'lsa web_search bilan internetdan qidir. "Narx", "eng arzon", "eng yangi", "topib kel", "qara" kabi so'rovlarda albatta qidir va havola keltir.
+- Sen AI yordamchisan; buni yashirmaysan, lekin har safar takrorlab o'tirmaysan.
+- Telegram uchun oddiy matn yoz — markdown, jadval yoki murakkab formatlash ishlatma.
+- Agar so'ralgan ishni bajara olmasang, shunchaki "qila olmayman" deb qo'yma: nima uchun ekanini qisqa ayt va muqobil yo'l taklif qil.`;
 
   const extra = {
     rita: '\nSen yangiliklar va sun\'iy intellekt bo\'yicha mutaxassissan. Texnologiya, startaplar, AI vositalari va g\'oyalar sening sohang.',
@@ -38,13 +42,16 @@ Qoidalar:
 const SEARCH_HINTS =
   /(oxirgi|so['’]?nggi|eng yangi|yangi versiya|versiya|narx|qancha|necha pul|eng arzon|arzon|kurs|202[4-9]|hozir|bugun|kecha|ertaga|qidir|topib|top\b|qara|havola|link|yangilik|kim g[’']?olib|natija|ob-havo|valyuta|kurs[i]?)/i;
 
-/** Persona nomidan foydalanuvchi topshirig'iga javob qaytaradi (kerak bo'lsa web qidiruv bilan). */
-export async function respond({ persona, userText, maxTokens = 2000 }) {
+/**
+ * Persona nomidan foydalanuvchi topshirig'iga javob qaytaradi.
+ * `history` — oldingi suhbat ([{role, content}, ...]), agent xotirasi.
+ */
+export async function respond({ persona, userText, history = [], maxTokens = 2000 }) {
   const system = systemFor(persona);
   const forceSearch = SEARCH_HINTS.test(userText);
 
   async function run(tools, force = false) {
-    const messages = [{ role: 'user', content: userText }];
+    const messages = [...history, { role: 'user', content: userText }];
     const req = { model: config.llm.model, max_tokens: maxTokens, system, messages };
     if (tools) req.tools = tools;
     // Birinchi navbatda qidirishga majburlaymiz; keyingi turlarда model o'zi javob yozadi
