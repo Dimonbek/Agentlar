@@ -44,6 +44,9 @@ export const config = {
   groq: {
     apiKey: process.env.GROQ_API_KEY || '',
     model: process.env.GROQ_STT_MODEL || 'whisper-large-v3-turbo',
+    // Ovoz tili. Bo'sh qoldirilsa avtomatik aniqlanadi (lekin o'zbekcha
+    // turk/ozarbayjon bilan chalkashadi), shuning uchun default 'uz'.
+    language: process.env.STT_LANGUAGE ?? 'uz',
   },
 
   // Layla — 30 kunlik ingliz tili kursi

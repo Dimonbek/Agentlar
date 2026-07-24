@@ -14,10 +14,14 @@ export async function transcribeGroq(audioBase64, mime = 'audio/ogg') {
   form.append('file', new Blob([buf], { type: mime }), `voice.${ext}`);
   form.append('model', config.groq.model);
   form.append('response_format', 'json');
-  // Tilni majburlamaymiz — o'zbek/rus/ingliz avtomatik aniqlanadi
+  // Tilni aniq ko'rsatamiz — aks holda Whisper o'zbekchani turk/ozarbayjon deb
+  // aniqlab, "ə, ğ, ı" harflari bilan noto'g'ri yozib yuboradi.
+  if (config.groq.language) form.append('language', config.groq.language);
   form.append(
     'prompt',
-    'Ovozli xabar o\'zbek, rus yoki ingliz tilida. Matnni aynan aytilganidek yoz.',
+    'Ovozli xabar o‘zbek tilida, lotin alifbosida. ' +
+      'Namuna so‘zlar: salom, rahmat, hozir, bugun, ertaga, qanday, eng yaxshi, ' +
+      'g‘oya, reja, o‘ttiz kunlik, darslik, tayyorlamoqchi edik, loyiha, server.',
   );
 
   const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {

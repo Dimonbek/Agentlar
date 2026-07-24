@@ -23,8 +23,15 @@ export async function transcribe(audioBase64, mime = 'audio/ogg') {
             {
               text:
                 'Bu ovozli xabarni so\'zma-so\'z matnga o\'gir. Faqat matnning o\'zini qaytar, ' +
-                'hech qanday izoh, tirnoq yoki qo\'shimcha belgi qo\'shma. ' +
-                'Xabar o\'zbek, rus yoki ingliz tilida bo\'lishi mumkin — qaysi tilda aytilgan bo\'lsa, o\'sha tilda yoz. ' +
+                'hech qanday izoh, tirnoq yoki qo\'shimcha belgi qo\'shma.\n\n' +
+                'MUHIM — TIL: Xabar deyarli har doim O\'ZBEK TILIDA, lotin alifbosida.\n' +
+                'O\'zbek tilini turk yoki ozarbayjon tili bilan ADASHTIRMA. ' +
+                'Quyidagi harflarni umuman ishlatma: ə, ı, ğ, ş, ç, ö, ü.\n' +
+                'O\'zbek lotin alifbosidan foydalan: o‘, g‘, sh, ch, ng, q, x, h.\n' +
+                'Masalan to\'g\'ri: "hozir", "eng yaxshi", "g‘oya", "o‘ttiz kunlik", "tayyorlamoqchi edik", ' +
+                '"darslik", "reja", "salom", "rahmat", "qanday", "bugun", "ertaga".\n' +
+                'Noto\'g\'ri (bunday YOZMA): "hazır", "gündə", "oğayanı", "tüsküllük", "dersliklərini", "təyərləmaq".\n\n' +
+                'Agar xabar aniq rus yoki ingliz tilida bo\'lsa — o\'sha tilda yoz. ' +
                 'Agar ovozda umuman nutq bo\'lmasa, bo\'sh javob qaytar.',
             },
             { inline_data: { mime_type: mime, data: audioBase64 } },
