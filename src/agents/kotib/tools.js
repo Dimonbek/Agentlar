@@ -1,7 +1,41 @@
-import { getBizMessagesBetween } from '../../core/db.js';
+import { getBizMessagesBetween, getBizContacts, getBizConn } from '../../core/db.js';
+import { log } from '../../core/logger.js';
 
 /** Debra ixtiyoridagi asboblar (Claude tool-use). */
 export const debraTools = [
+  {
+    name: 'list_contacts',
+    description:
+      'Dexterning lichkasida yozishgan odamlar ro\'yxatini beradi (ism va ichki chat_id). ' +
+      'Kimgadir xabar yuborishdan OLDIN har doim shu asbob bilan kerakli odamni top.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        search: {
+          type: 'string',
+          description: 'Ism bo\'yicha izlash uchun matn (masalan "Madina"). Bo\'sh bo\'lsa hammasi.',
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'send_private_message',
+    description:
+      'Dexterning nomidan lichkadagi odamga xabar yuboradi. ' +
+      'chat_id ni ALBATTA list_contacts dan ol — o\'zingdan to\'qib chiqarma. ' +
+      'Faqat Dexter aniq "falonchiga shuni yoz" deb topshirsa ishlat.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        chat_id: { type: 'string', description: 'list_contacts bergan chat_id' },
+        text: { type: 'string', description: 'Yuboriladigan xabar matni' },
+      },
+      required: ['chat_id', 'text'],
+      additionalProperties: false,
+    },
+  },
   {
     name: 'get_private_messages',
     description:
@@ -52,8 +86,54 @@ function dayLabel(ts) {
   return `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+/** Kontaktlar ro'yxati (ixtiyoriy izlash bilan). */
+function listContacts(search = '') {
+  const rows = getBizContacts();
+  const q = String(search || '').trim().toLowerCase();
+  const found = q
+    ? rows.filter((r) => String(r.sender || '').toLowerCase().includes(q))
+    : rows;
+
+  if (!found.length) {
+    return q
+      ? `"${search}" bo'yicha hech kim topilmadi. Lichkada yozishgan odamlar: ` +
+        (rows.map((r) => r.sender).join(', ') || 'hech kim yo\'q')
+      : 'Hozircha lichkada hech kim yozmagan.';
+  }
+
+  return found
+    .map((r) => `${r.sender} | chat_id=${r.chat_id} | ${r.cnt} ta xabar | oxirgi: ${new Date(r.last_at).toLocaleString('uz-UZ')}`)
+    .join('\n');
+}
+
+/** Dexter nomidan lichkaga xabar yuboradi (Business connection orqali). */
+async function sendPrivate(bot, chatId, text) {
+  if (!bot) return 'Xatolik: bot ulanmagan.';
+  const { conn_id: connId } = getBizConn();
+  if (!connId) {
+    return 'Business ulanish topilmadi. Telegram → Settings → Business → Chatbots dan Debra ulanganini tekshiring.';
+  }
+  try {
+    await bot.telegram.sendMessage(Number(chatId), text, { business_connection_id: connId });
+    log.info(`Debra: ${chatId} ga xabar yuborildi`);
+    return `Yuborildi. Xabar matni: "${text}"`;
+  } catch (e) {
+    log.error('Debra xabar yuborish xatosi:', e.message);
+    return `Yuborib bo'lmadi: ${e.message}`;
+  }
+}
+
 /** Debra asbobini bajaradi va natijani matn sifatida qaytaradi. */
-export function runDebraTool(name, input) {
+export async function runDebraTool(name, input, { bot } = {}) {
+  if (name === 'list_contacts') {
+    return listContacts(input?.search ?? '');
+  }
+
+  if (name === 'send_private_message') {
+    if (!input?.chat_id || !input?.text) return 'chat_id va text kerak.';
+    return sendPrivate(bot, input.chat_id, input.text);
+  }
+
   if (name !== 'get_private_messages') return `Noma'lum asbob: ${name}`;
 
   const [from, to] = periodRange(input?.period ?? 'today');

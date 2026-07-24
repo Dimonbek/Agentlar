@@ -46,6 +46,11 @@ export function attachBusiness(bot) {
       // Dexter o'zi mijozga yozgan bo'lsa — e'tiborsiz (faqat kelgan xabarni yetkazamiz)
       if (ownerId && m.from?.id === ownerId) return;
 
+      // Ulanish ID'sini har xabarda yangilab turamiz (bot qayta ishga tushsa ham yo'qolmasin)
+      if (m.business_connection_id && m.business_connection_id !== conn.conn_id) {
+        saveBizConn(ownerId ?? conn.owner_id ?? null, m.business_connection_id);
+      }
+
       const sender =
         [m.from?.first_name, m.from?.last_name].filter(Boolean).join(' ') ||
         (m.from?.username ? `@${m.from.username}` : 'Noma\'lum');

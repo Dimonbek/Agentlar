@@ -107,7 +107,7 @@ export function createChatBot(persona, token) {
         userText: fullQuery,
         history,
         tools: isDebra ? debraTools : [],
-        runTool: isDebra ? runDebraTool : null,
+        runTool: isDebra ? (n, i) => runDebraTool(n, i, { bot }) : null,
       });
 
       // Xotiraga yozamiz — keyingi safar shu suhbatni eslaydi

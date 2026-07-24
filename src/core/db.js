@@ -156,6 +156,16 @@ export function getBizMessagesBetween(fromMs, toMs = Date.now()) {
   return _bizSince.all(fromMs, toMs);
 }
 
+const _bizContacts = db.prepare(
+  `SELECT chat_id, sender, MAX(at) AS last_at, COUNT(*) AS cnt
+   FROM biz_messages GROUP BY chat_id ORDER BY last_at DESC`,
+);
+
+/** Lichkada yozishgan odamlar ro'yxati (kimga javob yuborish mumkinligi). */
+export function getBizContacts() {
+  return _bizContacts.all();
+}
+
 const _getAr = db.prepare('SELECT last_at FROM biz_autoreply WHERE chat_id = ?');
 const _setAr = db.prepare(
   'INSERT OR REPLACE INTO biz_autoreply (chat_id, last_at) VALUES (?, ?)',
