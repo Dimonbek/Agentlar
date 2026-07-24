@@ -11,6 +11,48 @@ import { log } from './logger.js';
 /** LLM'ga beriladigan suhbat tarixi uzunligi (≈30 savol-javob). */
 const HISTORY_LIMIT = 60;
 
+/** Telegram HTML'da ruxsat etilgan teglar. */
+const ALLOWED_TAGS = /<\/?(b|strong|i|em|u|s|code|pre)>/gi;
+/** Teglarni vaqtincha almashtirish uchun matnda uchramaydigan belgi. */
+const MARK = '@@TAG';
+
+/**
+ * Model javobini Telegram HTML'ga tayyorlaydi:
+ *  - markdown (**qalin**, ###, "- ") ni HTML/belgilarga o'giradi
+ *  - ruxsat etilgan teglarni saqlab, qolgan < > & belgilarini xavfsizlaydi
+ * Shu tufayli javob chiroyli chiqadi va noto'g'ri belgi Telegram'ni yiqitmaydi.
+ */
+function tidy(text) {
+  let t = String(text ?? '');
+
+  // Markdown -> HTML
+  t = t.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
+  t = t.replace(/__([^_\n]+)__/g, '<b>$1</b>');
+  t = t.replace(/^#{1,6}\s*(.+)$/gm, '<b>$1</b>');
+  // Ro'yxat chiziqchalarini nuqtaga almashtiramiz
+  t = t.replace(/^[ \t]*[-*][ \t]+/gm, '• ');
+
+  // Ruxsat etilgan teglarni vaqtincha chetga olamiz (matndagi raqamlarga tegmasin)
+  const saved = [];
+  t = t.replace(ALLOWED_TAGS, (m) => {
+    saved.push(m);
+    return `${MARK}${saved.length - 1}${MARK}`;
+  });
+  t = t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  t = t.replace(new RegExp(`${MARK}(\\d+)${MARK}`, 'g'), (_, i) => saved[Number(i)] ?? '');
+
+  return t.trim();
+}
+
+/** HTML ishlamasa — teglarsiz toza matn. */
+function stripTags(text) {
+  return String(text)
+    .replace(/<[^>]+>/g, '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+}
+
 /** Chaqiruv so'zini matn boshidan olib tashlaydi: "Rita, salom" -> "salom". */
 function stripTrigger(text, persona) {
   const re = new RegExp(`^\\s*(${persona.triggers.join('|')})\\s*[,!.:—-]*\\s*`, 'i');
@@ -20,7 +62,7 @@ function stripTrigger(text, persona) {
 /**
  * Ovoz transkripsiyasi keshi.
  * Uchala bot bir xil xabarni oladi — kesh bo'lmasa bitta ovoz 3 marta
- * Gemini'ga yuborilib, bepul kvota 3x tez tugaydi. Shu yerda birinchi bot
+ * yuborilib, bepul kvota 3x tez tugaydi. Shu yerda birinchi bot
  * so'rov qiladi, qolganlari o'sha natijani kutadi.
  */
 const voiceCache = new Map(); // file_unique_id -> { promise, at }
@@ -39,9 +81,10 @@ function cacheGet(key) {
   return hit.promise;
 }
 
-/** Telegram voice/audio obyektini yuklab, Gemini bilan matnga o'giradi (429 da bir marta qayta urinadi). */
+/** Telegram voice/audio obyektini yuklab, matnga o'giradi (Gemini -> Groq zanjiri). */
 async function voiceToText(ctx, v) {
-  if (!v || !config.gemini.apiKey) return '';
+  if (!v) return '';
+  if (!config.gemini.apiKey && !config.groq.apiKey) return '';
 
   const key = v.file_unique_id || v.file_id;
   const cached = cacheGet(key);
@@ -135,7 +178,7 @@ export function createChatBot(persona, token) {
       const chatId = ctx.chat.id;
       const history = getHistory(persona.agent, chatId, HISTORY_LIMIT);
 
-      // Debra lichka xabarlari bazasiga murojaat qila oladi
+      // Debra lichka xabarlari va serverlar bazasiga murojaat qila oladi
       const isDebra = persona.agent === 'kotib';
       const answer = await respond({
         persona,
@@ -151,19 +194,26 @@ export function createChatBot(persona, token) {
 
       const prefix = hasVoice ? `🎤 «${text.slice(0, 120)}»\n\n` : '';
 
-      for (const chunk of splitMessage(prefix + answer)) {
-        await ctx.reply(chunk, {
+      for (const chunk of splitMessage(tidy(prefix + answer))) {
+        const opts = {
           reply_parameters: { message_id: msg.message_id },
           link_preview_options: { is_disabled: true },
-        });
+        };
+        try {
+          await ctx.reply(chunk, { ...opts, parse_mode: 'HTML' });
+        } catch {
+          // Model noto'g'ri HTML yozib qo'ysa xabar yo'qolmasin — teglarsiz yuboramiz
+          log.warn(`${persona.name}: HTML formatlash xatosi, oddiy matn bilan yuborildi`);
+          await ctx.reply(stripTags(chunk), opts);
+        }
       }
     } catch (e) {
-      // Gemini kvotasi tugasa — 3 bot 3 marta emas, bir marta ogohlantiramiz
+      // Kvota tugasa — 3 bot 3 marta emas, bir marta ogohlantiramiz
       if (/\b429\b/.test(e.message) && Date.now() - quotaWarnedAt > 5 * 60_000) {
         quotaWarnedAt = Date.now();
         try {
           await ctx.reply(
-            'Ovozni matnga o\'girish limiti (Gemini bepul kvota) hozircha tugagan. ' +
+            'Ovozni matnga o\'girish limiti hozircha tugagan. ' +
               'Bir-ikki daqiqadan keyin qayta yuboring yoki matn bilan yozing.',
             { reply_parameters: { message_id: ctx.message.message_id } },
           );
