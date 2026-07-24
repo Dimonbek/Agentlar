@@ -49,7 +49,18 @@ export function createChatBot(persona, token) {
       const hasVoice = !!(msg.voice || msg.audio);
       if (hasVoice) {
         text = await voiceToText(ctx, msg.voice || msg.audio);
-        if (!text && !isReplyToMe) return;
+        if (!text) {
+          // Tushunilmadi: agar menga reply bo'lsa xabar beramiz, aks holda jimgina o'tamiz
+          // (chaqiruv ovoz ichida bo'lgani uchun kimga tegishli ekani noma'lum)
+          if (isReplyToMe) {
+            await ctx.reply('Ovozingni tushunolmadim — biroz balandroq yoki matn bilan yozib ko\'r.', {
+              reply_parameters: { message_id: msg.message_id },
+            });
+          } else {
+            log.warn(`${persona.name}: ovozli xabar tushunilmadi (bo'sh transkripsiya)`);
+          }
+          return;
+        }
       }
 
       // Bu xabar menga tegishlimi?
