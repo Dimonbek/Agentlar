@@ -17,13 +17,58 @@ function stripTrigger(text, persona) {
   return text.replace(re, '').trim();
 }
 
-/** Telegram voice/audio obyektini yuklab, Gemini bilan matnga o'giradi. */
+/**
+ * Ovoz transkripsiyasi keshi.
+ * Uchala bot bir xil xabarni oladi — kesh bo'lmasa bitta ovoz 3 marta
+ * Gemini'ga yuborilib, bepul kvota 3x tez tugaydi. Shu yerda birinchi bot
+ * so'rov qiladi, qolganlari o'sha natijani kutadi.
+ */
+const voiceCache = new Map(); // file_unique_id -> { promise, at }
+const VOICE_CACHE_TTL = 10 * 60_000;
+
+/** Kvota ogohlantirishi oxirgi marta qachon yuborilgani (takror spam bo'lmasin). */
+let quotaWarnedAt = 0;
+
+function cacheGet(key) {
+  const hit = voiceCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.at > VOICE_CACHE_TTL) {
+    voiceCache.delete(key);
+    return null;
+  }
+  return hit.promise;
+}
+
+/** Telegram voice/audio obyektini yuklab, Gemini bilan matnga o'giradi (429 da bir marta qayta urinadi). */
 async function voiceToText(ctx, v) {
   if (!v || !config.gemini.apiKey) return '';
-  const link = await ctx.telegram.getFileLink(v.file_id);
-  const res = await fetch(link.href);
-  const buf = Buffer.from(await res.arrayBuffer());
-  return transcribe(buf.toString('base64'), v.mime_type || 'audio/ogg');
+
+  const key = v.file_unique_id || v.file_id;
+  const cached = cacheGet(key);
+  if (cached) return cached;
+
+  const promise = (async () => {
+    const link = await ctx.telegram.getFileLink(v.file_id);
+    const res = await fetch(link.href);
+    const b64 = Buffer.from(await res.arrayBuffer()).toString('base64');
+    const mime = v.mime_type || 'audio/ogg';
+    try {
+      return await transcribe(b64, mime);
+    } catch (e) {
+      // Kvota/limit xatosi bo'lsa bir marta kutib qayta urinamiz
+      if (/\b429\b/.test(e.message)) {
+        log.warn('Gemini kvota limiti — 4 soniyadan keyin qayta urinaman');
+        await new Promise((r) => setTimeout(r, 4000));
+        return transcribe(b64, mime);
+      }
+      throw e;
+    }
+  })();
+
+  voiceCache.set(key, { promise, at: Date.now() });
+  // Xato bo'lsa keshda "yiqilgan promise" qolib ketmasin
+  promise.catch(() => voiceCache.delete(key));
+  return promise;
 }
 
 /**
@@ -123,7 +168,18 @@ export function createChatBot(persona, token) {
         });
       }
     } catch (e) {
-      log.error(`${persona.name} javob xatosi:`, e.message);
+      // Gemini kvotasi tugasa — 3 bot 3 marta emas, bir marta ogohlantiramiz
+      if (/\b429\b/.test(e.message) && Date.now() - quotaWarnedAt > 5 * 60_000) {
+        quotaWarnedAt = Date.now();
+        try {
+          await ctx.reply(
+            'Ovozni matnga o\'girish limiti (Gemini bepul kvota) hozircha tugagan. ' +
+              'Bir-ikki daqiqadan keyin qayta yuboring yoki matn bilan yozing.',
+            { reply_parameters: { message_id: ctx.message.message_id } },
+          );
+        } catch { /* javob berib bo'lmasa jim qolamiz */ }
+      }
+      log.error(`${persona.name} javob xatosi:`, e.message.slice(0, 200));
     }
   });
 
