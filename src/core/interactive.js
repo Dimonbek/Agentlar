@@ -1,7 +1,7 @@
 import { Telegraf } from 'telegraf';
 import { config } from './config.js';
 import { detectPersona } from './personas.js';
-import { transcribe } from './gemini.js';
+import { speechToText } from './stt.js';
 import { respond } from './brain.js';
 import { splitMessage } from './telegram.js';
 import { addHistory, getHistory } from './db.js';
@@ -51,18 +51,8 @@ async function voiceToText(ctx, v) {
     const link = await ctx.telegram.getFileLink(v.file_id);
     const res = await fetch(link.href);
     const b64 = Buffer.from(await res.arrayBuffer()).toString('base64');
-    const mime = v.mime_type || 'audio/ogg';
-    try {
-      return await transcribe(b64, mime);
-    } catch (e) {
-      // Kvota/limit xatosi bo'lsa bir marta kutib qayta urinamiz
-      if (/\b429\b/.test(e.message)) {
-        log.warn('Gemini kvota limiti — 4 soniyadan keyin qayta urinaman');
-        await new Promise((r) => setTimeout(r, 4000));
-        return transcribe(b64, mime);
-      }
-      throw e;
-    }
+    // stt.js o'zi Gemini -> Groq zanjirini boshqaradi
+    return speechToText(b64, v.mime_type || 'audio/ogg');
   })();
 
   voiceCache.set(key, { promise, at: Date.now() });

@@ -34,10 +34,16 @@ export const config = {
     },
   },
 
-  // Gemini — ovozli xabarni matnga o'girish (bepul)
+  // Gemini — ovozli xabarni matnga o'girish (asosiy)
   gemini: {
     apiKey: process.env.GEMINI_API_KEY || '',
     model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  },
+
+  // Groq — ovoz uchun zaxira (Gemini limitga urilganda)
+  groq: {
+    apiKey: process.env.GROQ_API_KEY || '',
+    model: process.env.GROQ_STT_MODEL || 'whisper-large-v3-turbo',
   },
 
   // Layla — 30 kunlik ingliz tili kursi
