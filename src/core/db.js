@@ -63,6 +63,13 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_hist ON chat_history(agent, chat_id, id);
+
+  -- Layla: ingliz tili kursi progressi
+  CREATE TABLE IF NOT EXISTS lingo_progress (
+    id          INTEGER PRIMARY KEY CHECK (id = 1),
+    day         INTEGER NOT NULL DEFAULT 0,
+    last_sent   INTEGER
+  );
 `);
 
 /** URL'ni normallashtirib hash qiladi (utm_* va shunga o'xshash chiqindilarni tashlaydi). */
@@ -195,4 +202,17 @@ export function getHistory(agent, chatId, limit = 30) {
 
 export function clearHistory(agent, chatId) {
   db.prepare('DELETE FROM chat_history WHERE agent = ? AND chat_id = ?').run(agent, String(chatId));
+}
+
+// ---- Layla: kurs progressi ----
+
+export function getLingoDay() {
+  const row = db.prepare('SELECT day, last_sent FROM lingo_progress WHERE id = 1').get();
+  return row ?? { day: 0, last_sent: null };
+}
+
+export function setLingoDay(day) {
+  db.prepare(
+    'INSERT OR REPLACE INTO lingo_progress (id, day, last_sent) VALUES (1, ?, ?)',
+  ).run(day, Date.now());
 }

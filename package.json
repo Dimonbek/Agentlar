@@ -8,7 +8,8 @@
   "scripts": {
     "start": "node src/index.js",
     "radar:news": "node src/index.js --once=radar:news",
-    "radar:idea": "node src/index.js --once=radar:idea"
+    "radar:idea": "node src/index.js --once=radar:idea",
+    "lingo:lesson": "node src/index.js --once=lingo:lesson"
   },
   "engines": {
     "node": ">=22"

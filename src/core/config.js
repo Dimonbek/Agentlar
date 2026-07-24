@@ -40,6 +40,11 @@ export const config = {
     model: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   },
 
+  // Layla — 30 kunlik ingliz tili kursi
+  lingo: {
+    cron: process.env.CRON_LESSON || '0 10 * * *',
+  },
+
   // Debra — Telegram Business (lichka xabarlari)
   business: {
     autoReply: process.env.BUSINESS_AUTOREPLY === '1',
