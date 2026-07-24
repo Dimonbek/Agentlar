@@ -146,6 +146,16 @@ export function getBizMessage(chatId, messageId) {
   return _getBiz.get(chatId, messageId);
 }
 
+const _bizSince = db.prepare(
+  `SELECT chat_id, sender, text, at FROM biz_messages
+   WHERE at >= ? AND at <= ? ORDER BY at ASC`,
+);
+
+/** Berilgan davrda kelgan lichka xabarlari (Debra hisobot berishi uchun). */
+export function getBizMessagesBetween(fromMs, toMs = Date.now()) {
+  return _bizSince.all(fromMs, toMs);
+}
+
 const _getAr = db.prepare('SELECT last_at FROM biz_autoreply WHERE chat_id = ?');
 const _setAr = db.prepare(
   'INSERT OR REPLACE INTO biz_autoreply (chat_id, last_at) VALUES (?, ?)',

@@ -5,6 +5,7 @@ import { transcribe } from './gemini.js';
 import { respond } from './brain.js';
 import { splitMessage } from './telegram.js';
 import { addHistory, getHistory } from './db.js';
+import { debraTools, runDebraTool } from '../agents/kotib/tools.js';
 import { log } from './logger.js';
 
 /** LLM'ga beriladigan suhbat tarixi uzunligi (≈30 savol-javob). */
@@ -98,7 +99,16 @@ export function createChatBot(persona, token) {
 
       const chatId = ctx.chat.id;
       const history = getHistory(persona.agent, chatId, HISTORY_LIMIT);
-      const answer = await respond({ persona, userText: fullQuery, history });
+
+      // Debra lichka xabarlari bazasiga murojaat qila oladi
+      const isDebra = persona.agent === 'kotib';
+      const answer = await respond({
+        persona,
+        userText: fullQuery,
+        history,
+        tools: isDebra ? debraTools : [],
+        runTool: isDebra ? runDebraTool : null,
+      });
 
       // Xotiraga yozamiz — keyingi safar shu suhbatni eslaydi
       addHistory(persona.agent, chatId, 'user', fullQuery);

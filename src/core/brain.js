@@ -68,7 +68,13 @@ SENING VAZIFANG (Debra) — Dexterning shaxsiy kotibi va lichka xabarlari nazora
   (o'zingni AI yordamchi ekaningni ochiq aytib).
 - Bundan tashqari kundalik ishlarda yordam berasan: vazifalar, rejalar, eslatmalar, umumiy qidiruv.
 - Dexter kimgadir xabar yuborishni so'rasa: hozircha bu faqat u bilan avval yozishgan odamlarga mumkin.
-  Iloji bo'lmasa, sababini qisqa tushuntirib, matnni tayyorlab berasan yoki muqobil taklif qilasan.`,
+  Iloji bo'lmasa, sababini qisqa tushuntirib, matnni tayyorlab berasan yoki muqobil taklif qilasan.
+
+SENING ASBOBING BOR — get_private_messages:
+- "Bugun kim yozdi?", "kecha nima xabar keldi?", "shu haftadagi xabarlar", "menga kim yozgan"
+  kabi HAR QANDAY so'rovda shu asbobni chaqir. Xotirangdan yoki taxminan javob berma.
+- Natijani chiroyli, o'qishga qulay ro'yxat qilib ber: kim, nechta xabar, qisqacha nima yozgani va soati.
+- Ko'p xabar bo'lsa eng muhimini ajratib ko'rsat, muhim/shoshilinch ko'ringanini alohida ta'kidla.`,
   };
 
   const character = persona.character
@@ -91,7 +97,14 @@ const SEARCH_HINTS =
  * Persona nomidan foydalanuvchi topshirig'iga javob qaytaradi.
  * `history` — oldingi suhbat ([{role, content}, ...]), agent xotirasi.
  */
-export async function respond({ persona, userText, history = [], maxTokens = 2000 }) {
+export async function respond({
+  persona,
+  userText,
+  history = [],
+  maxTokens = 2000,
+  tools: customTools = [],
+  runTool = null,
+}) {
   const system = systemFor(persona);
   const forceSearch = SEARCH_HINTS.test(userText);
 
@@ -104,9 +117,32 @@ export async function respond({ persona, userText, history = [], maxTokens = 200
 
     let res = await client.messages.create(req);
     let guard = 0;
-    // Server-side tool (web_search) iteratsiya chegarasiga yetsa — davom ettiramiz
-    while (res.stop_reason === 'pause_turn' && guard++ < 5) {
-      messages.push({ role: 'assistant', content: res.content });
+
+    // Tool tsikli: server-side (web_search) va o'z asboblarimiz (Debra)
+    while (guard++ < 8) {
+      if (res.stop_reason === 'pause_turn') {
+        messages.push({ role: 'assistant', content: res.content });
+      } else if (res.stop_reason === 'tool_use' && runTool) {
+        const calls = res.content.filter((b) => b.type === 'tool_use');
+        if (!calls.length) break;
+        messages.push({ role: 'assistant', content: res.content });
+
+        const results = [];
+        for (const c of calls) {
+          let out;
+          try {
+            out = await runTool(c.name, c.input);
+          } catch (e) {
+            out = `Asbob xatosi: ${e.message}`;
+          }
+          log.info(`${persona.name}: asbob "${c.name}" ishlatildi`);
+          results.push({ type: 'tool_result', tool_use_id: c.id, content: String(out) });
+        }
+        messages.push({ role: 'user', content: results });
+      } else {
+        break;
+      }
+
       res = await client.messages.create({
         model: config.llm.model, max_tokens: maxTokens, system, messages, tools,
       });
@@ -114,12 +150,14 @@ export async function respond({ persona, userText, history = [], maxTokens = 200
     return res;
   }
 
+  const allTools = [webTool(), ...customTools];
+
   let res;
   try {
-    res = await run([webTool()], forceSearch);
+    res = await run(allTools, forceSearch);
   } catch (err) {
-    log.warn(`${persona.name}: web_search ishlamadi (${err.message}), web'siz javob beraman`);
-    res = await run(null);
+    log.warn(`${persona.name}: asboblar ishlamadi (${err.message}), oddiy javob beraman`);
+    res = await run(customTools.length ? customTools : null);
   }
 
   const text = res.content
