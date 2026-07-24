@@ -1,4 +1,5 @@
 import { getBizMessagesBetween, getBizContacts, getBizConn } from '../../core/db.js';
+import { getAllStatus, stopProject, startProject } from '../../core/railway.js';
 import { log } from '../../core/logger.js';
 
 /** Debra ixtiyoridagi asboblar (Claude tool-use). */
@@ -33,6 +34,35 @@ export const debraTools = [
         text: { type: 'string', description: 'Yuboriladigan xabar matni' },
       },
       required: ['chat_id', 'text'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'check_servers',
+    description:
+      'Railway\'dagi barcha loyihalar holatini tekshiradi: qaysi biri ishlayapti, qaysi birida muammo, ' +
+      'qaysi biri to\'xtatilgan. "Loyihalarim qalay?", "serverlar ishlayaptimi?", "holat" kabi so\'rovlarda ishlat.',
+    input_schema: { type: 'object', properties: {}, required: [], additionalProperties: false },
+  },
+  {
+    name: 'stop_project',
+    description:
+      'Loyihani serverdan to\'xtatadi (mijoz to\'lov qilmaganda). Sayt/bot ishlamay qoladi. ' +
+      'MUHIM: buni faqat Dexter aniq TASDIQ bergandan keyin ishlat.',
+    input_schema: {
+      type: 'object',
+      properties: { name: { type: 'string', description: 'Loyiha nomi, masalan "ustaqiz"' } },
+      required: ['name'],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'start_project',
+    description: 'To\'xtatilgan loyihani qayta ishga tushiradi (to\'lov kelgach).',
+    input_schema: {
+      type: 'object',
+      properties: { name: { type: 'string', description: 'Loyiha nomi' } },
+      required: ['name'],
       additionalProperties: false,
     },
   },
@@ -132,6 +162,40 @@ export async function runDebraTool(name, input, { bot } = {}) {
   if (name === 'send_private_message') {
     if (!input?.chat_id || !input?.text) return 'chat_id va text kerak.';
     return sendPrivate(bot, input.chat_id, input.text);
+  }
+
+  if (name === 'check_servers') {
+    try {
+      const projects = await getAllStatus();
+      return projects
+        .map((p) => {
+          const svc = p.services
+            .map((s) => `${s.name}: ${s.text}${s.at ? ` (${s.at.slice(0, 16).replace('T', ' ')})` : ''}`)
+            .join('; ');
+          return `${p.name} -> ${svc || 'service yo\'q'}`;
+        })
+        .join('\n');
+    } catch (e) {
+      return `Railway'ga ulanib bo'lmadi: ${e.message}`;
+    }
+  }
+
+  if (name === 'stop_project') {
+    try {
+      const r = await stopProject(input?.name);
+      return r.message;
+    } catch (e) {
+      return `To'xtatib bo'lmadi: ${e.message}`;
+    }
+  }
+
+  if (name === 'start_project') {
+    try {
+      const r = await startProject(input?.name);
+      return r.message;
+    } catch (e) {
+      return `Ishga tushirib bo'lmadi: ${e.message}`;
+    }
   }
 
   if (name !== 'get_private_messages') return `Noma'lum asbob: ${name}`;

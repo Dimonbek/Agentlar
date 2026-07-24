@@ -45,6 +45,12 @@ export const config = {
     cron: process.env.CRON_LESSON || '0 10 * * *',
   },
 
+  // Debra — Railway serverlar nazorati
+  railway: {
+    token: process.env.RAILWAY_API_TOKEN || '',
+    cron: process.env.CRON_SERVERS || '30 8 * * *',
+  },
+
   // Debra — Telegram Business (lichka xabarlari)
   business: {
     autoReply: process.env.BUSINESS_AUTOREPLY === '1',

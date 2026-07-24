@@ -1,5 +1,6 @@
 import { startRadar, jobs } from './agents/radar/index.js';
 import { startLingo, lingoJobs } from './agents/lingo/index.js';
+import { startMonitor, monitorJobs } from './agents/kotib/monitor.js';
 import { personas } from './core/personas.js';
 import { createChatBot } from './core/interactive.js';
 import { attachBusiness, BUSINESS_UPDATES } from './agents/kotib/business.js';
@@ -8,7 +9,7 @@ import { log } from './core/logger.js';
 
 const onceArg = process.argv.find((a) => a.startsWith('--once='));
 
-const allJobs = { ...jobs, ...lingoJobs };
+const allJobs = { ...jobs, ...lingoJobs, ...monitorJobs };
 
 if (onceArg) {
   // Bir martalik ishga tushirish: npm run radar:news / npm run lingo:lesson
@@ -27,6 +28,9 @@ startRadar();
 
 // 2. Layla — kunlik ingliz tili darsi
 startLingo();
+
+// 3. Debra — serverlar holati nazorati
+startMonitor();
 
 // 2. Interaktiv suhbat — Rita/Layla/Debra guruhni tinglaydi
 const bots = [];
