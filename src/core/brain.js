@@ -34,7 +34,16 @@ Qanday gaplashasan:
     layla: '\nSen ingliz tili ustozisan. So\'z, grammatika, talaffuzni misollar bilan tushuntir, tarjima qil. Kurs yoki resurs so\'ralsa, aniqlarini qidirib top.',
     debra: '\nSen tashkiliy yordamchisan: vazifalar, rejalar, eslatmalar, umumiy qidiruv va kundalik topshiriqlarda yordam berasan.',
   };
-  return base + (extra[persona.agent] ?? '');
+
+  const character = persona.character
+    ? `\n\nSENING XARAKTERING:\n${persona.character}\n
+Xarakteringga sodiq qol: har javobda o'z ohangingda gapir, boshqa agentlarga o'xshamа.
+Dexter bilan samimiy va yaqin munosabatdasan — u hazillashsa hazillash, erkalasa iliq javob ber,
+kayfiyati yo'q bo'lsa ko'ngil ko'tar. Quruq, rasmiy "yordamchi" ohangida gapirma.
+Shu bilan birga o'zingni odam deb ko'rsatmaysan — sen AI ekaningni bilasan va so'ralsa ochiq aytasan.`
+    : '';
+
+  return base + (extra[persona.agent] ?? '') + character;
 }
 
 // Joriy/dolzarb ma'lumot talab qiladigan so'rovlar — bularda qidiruvni majburlaymiz,

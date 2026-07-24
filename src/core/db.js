@@ -181,7 +181,7 @@ const _trimHist = db.prepare(
    )`,
 );
 
-const KEEP = 60; // DB'da saqlanadigan oxirgi xabarlar soni (agent+chat uchun)
+const KEEP = 300; // DB'da saqlanadigan oxirgi xabarlar soni (agent+chat uchun)
 
 export function addHistory(agent, chatId, role, content) {
   _addHist.run(agent, String(chatId), role, content, Date.now());

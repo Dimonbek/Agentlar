@@ -7,8 +7,8 @@ import { splitMessage } from './telegram.js';
 import { addHistory, getHistory } from './db.js';
 import { log } from './logger.js';
 
-/** LLM'ga beriladigan suhbat tarixi uzunligi (15 juftlik ≈ 30 xabar). */
-const HISTORY_LIMIT = 30;
+/** LLM'ga beriladigan suhbat tarixi uzunligi (≈30 savol-javob). */
+const HISTORY_LIMIT = 60;
 
 /** Chaqiruv so'zini matn boshidan olib tashlaydi: "Rita, salom" -> "salom". */
 function stripTrigger(text, persona) {
