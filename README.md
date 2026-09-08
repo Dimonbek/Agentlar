@@ -2,6 +2,17 @@
 
 Bitta kod bazasi, uchta alohida bot, bitta gruppa. Har bir agent — alohida shaxs.
 
+## Debra: Telegram shaxsiy xabarlari
+
+- Telegram Business → Chatbots orqali Debraga kerakli suhbatlarni o‘qish va javob berish ruxsatini bering. `BUSINESS_OWNER_ID` ga o‘zingizning raqamli Telegram user ID’ingizni kiriting. Oldindan saqlangan Business egasi ham ishlaydi; ikkalasi ham yo‘q bo‘lsa Debra buyruq bajarmaydi.
+- Kiruvchi matn, GIF, video, rasm, ovoz, audio, hujjat, stiker va video doira guruhga asl fayl ID’si bilan uzatiladi. Yuboruvchining ismi, username’i (mavjud bo‘lsa) va chat ID alohida ko‘rsatiladi. Albom elementlari alohida xabarlar sifatida uzatiladi. Kontakt va joylashuv ham uzatiladi; so‘rovnoma va zar natijasi matn bilan ko‘rsatiladi. Uzatish xatosi guruhda bildiriladi.
+- «Debra, @username ga ertaga soat 10 da uchrashamiz deb yoz» deb topshiring. Ism bilan ham qidirish mumkin. Debra oluvchi va to‘liq matnni chiqaradi; faqat hisob egasi **Yuborish** tugmasini bosganda yuboradi. **Bekor qilish** ham bor. Tasdiqlash 10 daqiqa amal qiladi; qayta ishga tushganda kutilayotgan qoralamalar bekor bo‘ladi.
+- Avtomatik shaxsiy javoblar o‘chirilgan (`BUSINESS_AUTOREPLY=1` ham xabar yubormaydi). Begona guruh a’zolari Debra buyruqlarini bajartira olmaydi.
+- Bot faqat Business orqali o‘ziga ochilgan suhbatlarni ko‘radi; eski yozishmalarni Telegram’dan yuklab olmaydi. Avval saqlangan kontaktlar ism bilan topiladi, username yangi kiruvchi xabarda yangilanadi. Telegram javob yuborishni oxirgi 24 soatda kiruvchi xabari bo‘lgan suhbatlar bilan cheklaydi: [BusinessBotRights](https://core.telegram.org/bots/api#businessbotrights).
+- Mahalliy tekshiruv: `node --test test/debra.test.js`. Testlar Telegramga haqiqiy xabar yubormaydi.
+
+Kod o‘zgargach ishlayotgan servisni qayta ishga tushirish/deploy qilish kerak.
+
 | Agent | Bot | Vazifa | Holat |
 |-------|-----|--------|-------|
 | **Radar** | alohida bot | Har kuni AI yangiliklari (o'zbekcha) + biznes g'oyasi | ✅ tayyor |

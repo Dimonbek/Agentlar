@@ -7,6 +7,7 @@ import { splitMessage } from './telegram.js';
 import { addHistory, getHistory } from './db.js';
 import { debraTools, runDebraTool } from '../agents/kotib/tools.js';
 import { log } from './logger.js';
+import { attachPrivateApproval, isBusinessOwner } from '../agents/kotib/approval.js';
 
 /** LLM'ga beriladigan suhbat tarixi uzunligi (≈30 savol-javob). */
 const HISTORY_LIMIT = 60;
@@ -113,10 +114,12 @@ async function voiceToText(ctx, v) {
  */
 export function createChatBot(persona, token) {
   const bot = new Telegraf(token);
+  if (persona.agent === 'kotib') attachPrivateApproval(bot);
 
   bot.on('message', async (ctx) => {
     try {
       if (String(ctx.chat.id) !== String(config.chat.groupChatId)) return;
+      if (persona.agent === 'kotib' && (!isBusinessOwner(ctx.from?.id) || ctx.message.sender_chat || ctx.from?.is_bot)) return;
 
       const msg = ctx.message;
       const replyTo = msg.reply_to_message;
@@ -185,7 +188,7 @@ export function createChatBot(persona, token) {
         userText: fullQuery,
         history,
         tools: isDebra ? debraTools : [],
-        runTool: isDebra ? (n, i) => runDebraTool(n, i, { bot }) : null,
+        runTool: isDebra ? (n, i) => runDebraTool(n, i, { bot, auth: { userId: ctx.from.id, groupId: ctx.chat.id } }) : null,
       });
 
       // Xotiraga yozamiz — keyingi safar shu suhbatni eslaydi

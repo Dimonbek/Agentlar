@@ -40,6 +40,14 @@ db.exec(`
   );
 
   -- Avto-javob spam bo'lmasligi uchun: mijozga oxirgi javob vaqti
+  CREATE TABLE IF NOT EXISTS biz_contacts (
+    chat_id INTEGER PRIMARY KEY,
+    sender TEXT NOT NULL,
+    username TEXT,
+    conn_id TEXT NOT NULL,
+    last_at INTEGER NOT NULL
+  );
+
   CREATE TABLE IF NOT EXISTS biz_autoreply (
     chat_id     INTEGER PRIMARY KEY,
     last_at     INTEGER NOT NULL
@@ -156,14 +164,24 @@ export function getBizMessagesBetween(fromMs, toMs = Date.now()) {
   return _bizSince.all(fromMs, toMs);
 }
 
-const _bizContacts = db.prepare(
-  `SELECT chat_id, sender, MAX(at) AS last_at, COUNT(*) AS cnt
-   FROM biz_messages GROUP BY chat_id ORDER BY last_at DESC`,
-);
+// Preserve contacts from databases created before usernames were stored.
+db.exec(`INSERT OR IGNORE INTO biz_contacts (chat_id, sender, username, conn_id, last_at)
+  SELECT m.chat_id, COALESCE(m.sender, 'Noma’lum'), NULL, c.conn_id, MAX(m.at)
+  FROM biz_messages m CROSS JOIN biz_conn c
+  WHERE c.id = 1 AND c.conn_id IS NOT NULL GROUP BY m.chat_id`);
 
 /** Lichkada yozishgan odamlar ro'yxati (kimga javob yuborish mumkinligi). */
 export function getBizContacts() {
-  return _bizContacts.all();
+  return db.prepare(`SELECT c.*, (SELECT COUNT(*) FROM biz_messages m WHERE m.chat_id = c.chat_id) AS cnt
+    FROM biz_contacts c ORDER BY last_at DESC`).all();
+}
+
+export function saveBizContact(m, sender) {
+  db.prepare(`INSERT INTO biz_contacts (chat_id, sender, username, conn_id, last_at)
+    VALUES (?, ?, ?, ?, ?) ON CONFLICT(chat_id) DO UPDATE SET
+    sender=excluded.sender, username=excluded.username, conn_id=excluded.conn_id,
+    last_at=excluded.last_at`).run(m.chat.id, sender, m.from?.username ?? null,
+      m.business_connection_id, m.date * 1000 || Date.now());
 }
 
 const _getAr = db.prepare('SELECT last_at FROM biz_autoreply WHERE chat_id = ?');
