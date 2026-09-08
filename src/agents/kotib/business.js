@@ -68,9 +68,7 @@ export function attachBusiness(bot) {
 
       const header = await bot.telegram.sendMessage(
         config.chat.groupChatId,
-        `📨 <b>Yangi xabar</b>\n` +
-          `Ismi: <b>${esc(sender)}</b>\n` +
-          `Username: ${m.from?.username ? `@${esc(m.from.username)}` : 'yo‘q'}\n` +
+        `${m.from?.username ? `@${esc(m.from.username)}` : 'Username yo‘q'}\n` +
           `Telegram ID: <code>${esc(m.from?.id ?? m.chat.id)}</code>\n` +
           `Xabar turi: ${messageLabel(m)}\n` +
           `Xabarning o‘zi quyida 👇`,

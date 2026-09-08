@@ -44,7 +44,7 @@ test('Business relays GIF with identity, ignores owner/foreign connections, neve
   const m = { chat: { id: 7 }, from: { id: 7, first_name: 'Ali', username: 'AliTest' },
     message_id: 10, date: Math.floor(Date.now() / 1000), business_connection_id: 'conn', animation: { file_id: 'gif' } };
   await handlers.business_message({ update: { business_message: m } });
-  assert.match(calls[0][2], /@AliTest/);
+  assert.match(calls[0][2], /^@AliTest\nTelegram ID: <code>7<\/code>\nXabar turi: GIF\n/);
   assert.match(calls[0][2], /Telegram ID: <code>7<\/code>/);
   assert.equal(calls[1][0], 'sendAnimation');
   assert.equal(getBizContacts()[0].username, 'AliTest');
@@ -76,7 +76,7 @@ test('Business handler relays text, photo, video, GIF and sticker with sender ID
       chat: { id: 7 }, from: { id: 8, first_name: 'Ali' }, business_connection_id: 'conn',
       message_id: 100 + headers.length, date: Math.floor(Date.now() / 1000), ...content,
     } } });
-    assert.match(headers.at(-1), /Username: yo‘q/);
+    assert.match(headers.at(-1), /^Username yo‘q\nTelegram ID: <code>8<\/code>\nXabar turi: /);
     assert.match(headers.at(-1), /Telegram ID: <code>8<\/code>/);
     assert.equal(payloads.at(-1).method, method);
     assert.equal(payloads.at(-1).data[field], expected);
