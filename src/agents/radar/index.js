@@ -124,7 +124,9 @@ export async function sweep() {
 }
 
 export const jobs = {
-  'rita:ping': sweep,
+  // Qo'lda ishga tushirilganda ham urug' yuklanadi: aks holda birinchi
+  // `npm run rita:ping` bo'sh bazaga urilib, hech narsa tekshirmasdi.
+  'rita:ping': async () => { seedProjects(); return sweep(); },
 };
 
 export function startRadar() {
