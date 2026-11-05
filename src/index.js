@@ -4,6 +4,7 @@ import { startMonitor, monitorJobs } from './agents/kotib/monitor.js';
 import { personas } from './core/personas.js';
 import { createChatBot } from './core/interactive.js';
 import { attachBusiness, BUSINESS_UPDATES } from './agents/kotib/business.js';
+import { startWeb } from './web/server.js';
 import { config } from './core/config.js';
 import { log } from './core/logger.js';
 
@@ -36,6 +37,10 @@ else log.info('Layla 📚 dam olmoqda — dars jadvali o\'chirilgan');
 
 // 3. Debra — serverlar holati nazorati
 if (isActive('debra')) startMonitor();
+
+// 4. Ofis sahifasi — loyihalar holatini ko'rsatadi
+if (config.web.enabled) startWeb();
+else log.info('Ofis sahifasi o\'chirilgan (ENABLE_WEB=0)');
 
 // 4. Interaktiv suhbat — faqat faol agentlar guruhni tinglaydi
 const bots = [];

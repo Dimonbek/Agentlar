@@ -99,4 +99,14 @@ export const config = {
     keepDays: num('PING_KEEP_DAYS', 30),
     seedFile: process.env.PROJECTS_SEED || 'data/projects.json',
   },
+
+  // Ofis sahifasi. Tashqariga to'g'ridan-to'g'ri chiqmaydi — Caddy parol
+  // bilan uzatadi. Caddy konteyner ichida bo'lgani uchun host ko'pincha
+  // docker ko'prigining shlyuzi bo'ladi (masalan 172.19.0.1).
+  web: {
+    enabled: process.env.ENABLE_WEB !== '0',
+    host: process.env.WEB_HOST || '127.0.0.1',
+    port: num('WEB_PORT', 4200),
+    avatarDir: process.env.AVATAR_DIR || 'public/avatar',
+  },
 };
