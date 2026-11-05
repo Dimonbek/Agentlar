@@ -78,7 +78,64 @@ db.exec(`
     day         INTEGER NOT NULL DEFAULT 0,
     last_sent   INTEGER
   );
+
+  -- Rita: ping tarixi (dashboard grafigi uchun)
+  CREATE TABLE IF NOT EXISTS checks (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    pkey    TEXT NOT NULL,
+    status  TEXT NOT NULL,
+    http    INTEGER,
+    ms      INTEGER,
+    note    TEXT,
+    at      INTEGER NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_checks ON checks(pkey, at);
 `);
+
+// Rita: kuzatiladigan loyihalar. Ustunlar ro'yxati migratsiyada ham
+// ishlatilgani uchun alohida turadi.
+const PROJECT_COLS = `
+  key         TEXT PRIMARY KEY,                -- barqaror identifikator: 'kgf-web'
+  name        TEXT NOT NULL,                   -- ko'rinadigan nom: 'KGF Web'
+  grp         TEXT NOT NULL DEFAULT 'boshqa',  -- guruh: 'kgf', 'botlar', ...
+  kind        TEXT NOT NULL DEFAULT 'http',    -- http | docker
+  target      TEXT NOT NULL,                   -- URL yoki Docker konteyner nomi
+  expect      TEXT,                            -- sog'lom kodlar: '200-399,401'
+  enabled     INTEGER NOT NULL DEFAULT 1,
+  status      TEXT NOT NULL DEFAULT 'unknown', -- ok | warn | err | unknown
+  http        INTEGER,                         -- oxirgi HTTP kodi
+  ms          INTEGER,                         -- oxirgi javob vaqti
+  note        TEXT,                            -- oxirgi xato matni
+  fail_streak INTEGER NOT NULL DEFAULT 0,
+  last_check  INTEGER,
+  last_ok     INTEGER,
+  created_at  INTEGER NOT NULL
+`;
+
+db.exec(`CREATE TABLE IF NOT EXISTS projects (${PROJECT_COLS});`);
+
+// Migratsiya: eski `url` ustuni → `kind` + `target` + `expect`.
+// SQLite ustun qo'shishni cheklaydi, shuning uchun jadvalni qayta quramiz.
+const projectCols = db.prepare('PRAGMA table_info(projects)').all().map((c) => c.name);
+if (!projectCols.includes('target') && projectCols.includes('url')) {
+  db.exec(`
+    PRAGMA foreign_keys = OFF;
+    BEGIN;
+    ALTER TABLE projects RENAME TO projects_eski;
+    CREATE TABLE projects (${PROJECT_COLS});
+    INSERT INTO projects
+      (key, name, grp, kind, target, expect, enabled, status, http, ms, note,
+       fail_streak, last_check, last_ok, created_at)
+    SELECT
+       key, name, grp, 'http', url, NULL, enabled, status, http, ms, note,
+       fail_streak, last_check, last_ok, created_at
+    FROM projects_eski;
+    DROP TABLE projects_eski;
+    COMMIT;
+    PRAGMA foreign_keys = ON;
+  `);
+}
 
 /** URL'ni normallashtirib hash qiladi (utm_* va shunga o'xshash chiqindilarni tashlaydi). */
 export function itemId(url) {
@@ -253,4 +310,69 @@ export function setLingoDay(day) {
   db.prepare(
     'INSERT OR REPLACE INTO lingo_progress (id, day, last_sent) VALUES (1, ?, ?)',
   ).run(day, Date.now());
+}
+
+// ---- Rita: loyihalar nazorati ----
+
+/** Loyiha qo'shadi yoki tahrirlaydi. Holat maydonlariga tegmaydi. */
+const _upsertProject = db.prepare(`
+  INSERT INTO projects (key, name, grp, kind, target, expect, enabled, created_at)
+  VALUES (@key, @name, @grp, @kind, @target, @expect, @enabled, @created_at)
+  ON CONFLICT(key) DO UPDATE SET
+    name = excluded.name, grp = excluded.grp, kind = excluded.kind,
+    target = excluded.target, expect = excluded.expect, enabled = excluded.enabled
+`);
+
+export function addProject({ key, name, grp = 'boshqa', kind = 'http', target, expect = null, enabled = true }) {
+  if (!target) throw new Error(`Loyiha "${key}": target (URL yoki konteyner nomi) ko'rsatilmagan`);
+  if (kind !== 'http' && kind !== 'docker') throw new Error(`Loyiha "${key}": noma'lum kind "${kind}"`);
+  _upsertProject.run({
+    key, name, grp, kind, target, expect,
+    enabled: enabled ? 1 : 0, created_at: Date.now(),
+  });
+}
+
+export function listProjects({ onlyEnabled = false } = {}) {
+  return db
+    .prepare(`SELECT * FROM projects ${onlyEnabled ? 'WHERE enabled = 1' : ''} ORDER BY grp, name`)
+    .all();
+}
+
+export function countProjects() {
+  return db.prepare('SELECT COUNT(*) AS n FROM projects').get().n;
+}
+
+export function removeProject(key) {
+  db.prepare('DELETE FROM checks WHERE pkey = ?').run(key);
+  db.prepare('DELETE FROM projects WHERE key = ?').run(key);
+}
+
+const _saveCheck = db.prepare(
+  'INSERT INTO checks (pkey, status, http, ms, note, at) VALUES (@pkey, @status, @http, @ms, @note, @at)',
+);
+const _updProject = db.prepare(`
+  UPDATE projects SET status = @status, http = @http, ms = @ms, note = @note,
+    fail_streak = @fail_streak, last_check = @at,
+    last_ok = CASE WHEN @status = 'err' THEN last_ok ELSE @at END
+  WHERE key = @key
+`);
+
+/** Ping natijasini yozadi: loyiha holati + tarix. */
+export const recordCheck = db.transaction((key, r) => {
+  const row = { pkey: key, status: r.status, http: r.http ?? null, ms: r.ms ?? null, note: r.note ?? null, at: r.at };
+  _saveCheck.run(row);
+  _updProject.run({ key, ...row, fail_streak: r.fail_streak });
+});
+
+/** Oxirgi N ta tekshiruv (dashboard grafigi uchun). */
+export function recentChecks(key, limit = 48) {
+  return db
+    .prepare('SELECT status, http, ms, at FROM checks WHERE pkey = ? ORDER BY at DESC LIMIT ?')
+    .all(key, limit)
+    .reverse();
+}
+
+/** Ping tarixini kesadi — baza cheksiz o'smasin. */
+export function pruneChecks(days = 30) {
+  db.prepare('DELETE FROM checks WHERE at < ?').run(Date.now() - days * 86400_000);
 }

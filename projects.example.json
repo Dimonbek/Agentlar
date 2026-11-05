@@ -1,0 +1,33 @@
+[
+  {
+    "key": "subtitr-web", "name": "subtitr.uz", "grp": "subtitr",
+    "kind": "http", "target": "https://subtitr.uz"
+  },
+  {
+    "key": "xarajat-app", "name": "Xarajat", "grp": "xarajat",
+    "kind": "http", "target": "https://45-92-173-191.sslip.io"
+  },
+  {
+    "_izoh": "Panel parol so'raydi — 401 ham sog'lom javob hisoblanadi",
+    "key": "yuznazorat-panel", "name": "Yuznazorat panel", "grp": "yuznazorat",
+    "kind": "http", "target": "http://127.0.0.1:4100/", "expect": "200-399,401"
+  },
+
+  {
+    "_izoh": "Telegram botlari — HTTP porti yo'q, konteyner holati tekshiriladi",
+    "key": "hisobot-bot", "name": "Hisobot kunlik bot", "grp": "botlar",
+    "kind": "docker", "target": "hisobot-kunlik-bot"
+  },
+  {
+    "key": "zuhro-bot", "name": "Zuhro Travel bot", "grp": "tur",
+    "kind": "docker", "target": "zuhro-travel-bot"
+  },
+  {
+    "key": "subtitr-container", "name": "Subtitr konteyner", "grp": "subtitr",
+    "kind": "docker", "target": "subtitr"
+  },
+  {
+    "key": "caddy", "name": "Caddy (reverse proxy)", "grp": "infra",
+    "kind": "docker", "target": "xarajat-caddy-1"
+  }
+]

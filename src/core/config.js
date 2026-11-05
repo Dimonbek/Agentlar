@@ -22,6 +22,13 @@ export const config = {
     effort: process.env.LLM_EFFORT || 'medium',
   },
 
+  // Qaysi agentlar ishlaydi (vergul bilan). Hozircha faqat Debra —
+  // Rita va Layla dam olmoqda. Qaytarish: ACTIVE_AGENTS=debra,rita,layla
+  activeAgents: (process.env.ACTIVE_AGENTS || 'debra')
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean),
+
   // Interaktiv suhbat: guruhda "Rita/Layla/Debra, ..." deb chaqirish
   chat: {
     enabled: process.env.ENABLE_CHAT !== '0',
@@ -72,11 +79,24 @@ export const config = {
   radar: {
     token: req('RADAR_BOT_TOKEN'),
     chatId: req('GROUP_CHAT_ID'),
-    newsTopicId: num('TOPIC_NEWS_ID', undefined),
-    ideasTopicId: num('TOPIC_IDEAS_ID', undefined),
-    cronNews: process.env.CRON_NEWS || '0 9 * * *',
-    cronIdea: process.env.CRON_IDEA || '0 20 * * *',
-    newsCount: num('NEWS_COUNT', 5),
-    windowHours: num('NEWS_WINDOW_HOURS', 36),
+  },
+
+  // Rita — loyihalar nazorati (HTTP ping)
+  monitor: {
+    cron: process.env.CRON_PING || '*/30 * * * *',
+    timeoutMs: num('PING_TIMEOUT_MS', 10_000),
+    // Shundan sekin javob "warn" deb belgilanadi (xabar yuborilmaydi)
+    slowMs: num('PING_SLOW_MS', 1500),
+    // Birinchi urinish yiqilsa shuncha marta qayta uriladi — bir lahzalik
+    // uzilish uchun keyingi tekshiruvgacha kutib o'tirmaslik uchun
+    retries: num('PING_RETRIES', 1),
+    retryDelayMs: num('PING_RETRY_DELAY_MS', 4000),
+    // Ketma-ket shuncha marta yiqilgandan keyin Telegramga xabar ketadi
+    failStreak: num('PING_FAIL_STREAK', 1),
+    concurrency: num('PING_CONCURRENCY', 6),
+    // Konteyner shundan yaqin ko'tarilgan bo'lsa "hozirgina qayta ishga tushdi"
+    freshRestartMs: num('DOCKER_FRESH_RESTART_MS', 120_000),
+    keepDays: num('PING_KEEP_DAYS', 30),
+    seedFile: process.env.PROJECTS_SEED || 'data/projects.json',
   },
 };

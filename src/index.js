@@ -23,19 +23,25 @@ if (onceArg) {
   process.exit(0);
 }
 
-// 1. Radar jadvali (yangiliklar + g'oya)
-startRadar();
+const isActive = (key) => config.activeAgents.includes(key);
+log.info(`Faol agentlar: ${config.activeAgents.join(', ') || '(hech kim)'}`);
+
+// 1. Rita — loyihalar nazorati (HTTP ping)
+if (isActive('rita')) startRadar();
+else log.info('Rita 🛰 dam olmoqda — loyihalar nazorati o\'chirilgan');
 
 // 2. Layla — kunlik ingliz tili darsi
-startLingo();
+if (isActive('layla')) startLingo();
+else log.info('Layla 📚 dam olmoqda — dars jadvali o\'chirilgan');
 
 // 3. Debra — serverlar holati nazorati
-startMonitor();
+if (isActive('debra')) startMonitor();
 
-// 2. Interaktiv suhbat — Rita/Layla/Debra guruhni tinglaydi
+// 4. Interaktiv suhbat — faqat faol agentlar guruhni tinglaydi
 const bots = [];
 if (config.chat.enabled && config.chat.groupChatId) {
   for (const [key, persona] of Object.entries(personas)) {
+    if (!isActive(key)) continue;
     const token = config.chat.tokens[key];
     if (!token) {
       log.warn(`${persona.name}: token yo'q — tinglamaydi`);
