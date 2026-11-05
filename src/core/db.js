@@ -99,8 +99,8 @@ const PROJECT_COLS = `
   key         TEXT PRIMARY KEY,                -- barqaror identifikator: 'kgf-web'
   name        TEXT NOT NULL,                   -- ko'rinadigan nom: 'KGF Web'
   grp         TEXT NOT NULL DEFAULT 'boshqa',  -- guruh: 'kgf', 'botlar', ...
-  kind        TEXT NOT NULL DEFAULT 'http',    -- http | docker
-  target      TEXT NOT NULL,                   -- URL yoki Docker konteyner nomi
+  kind        TEXT NOT NULL DEFAULT 'http',    -- http | docker | systemd
+  target      TEXT NOT NULL,                   -- URL, konteyner nomi yoki systemd unit
   expect      TEXT,                            -- sog'lom kodlar: '200-399,401'
   enabled     INTEGER NOT NULL DEFAULT 1,
   status      TEXT NOT NULL DEFAULT 'unknown', -- ok | warn | err | unknown
@@ -325,7 +325,7 @@ const _upsertProject = db.prepare(`
 
 export function addProject({ key, name, grp = 'boshqa', kind = 'http', target, expect = null, enabled = true }) {
   if (!target) throw new Error(`Loyiha "${key}": target (URL yoki konteyner nomi) ko'rsatilmagan`);
-  if (kind !== 'http' && kind !== 'docker') throw new Error(`Loyiha "${key}": noma'lum kind "${kind}"`);
+  if (!['http', 'docker', 'systemd'].includes(kind)) throw new Error(`Loyiha "${key}": noma'lum kind "${kind}"`);
   _upsertProject.run({
     key, name, grp, kind, target, expect,
     enabled: enabled ? 1 : 0, created_at: Date.now(),

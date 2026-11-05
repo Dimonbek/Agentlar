@@ -99,7 +99,52 @@ async function dockerAttempt(name) {
   }
 }
 
-const attempt = (p) => (p.kind === 'docker' ? dockerAttempt(p.target) : httpAttempt(p.target, p.expect));
+/**
+ * systemd servisini tekshiradi — Docker'siz, to'g'ridan-to'g'ri serverda
+ * ishlaydigan loyihalar uchun (masalan Python botlari).
+ */
+async function systemdAttempt(unit) {
+  const t0 = performance.now();
+  try {
+    // `--value` ISHLATILMAYDI: systemctl xossalarni so'ralgan tartibda emas,
+    // o'z tartibida chiqaradi, shuning uchun qiymatlar nomi bilan o'qiladi.
+    const { stdout } = await run('systemctl', [
+      'show', unit, '--property=ActiveState,SubState,ActiveEnterTimestamp,Result',
+    ], { timeout: config.monitor.timeoutMs });
+    const ms = Math.round(performance.now() - t0);
+    const q = Object.fromEntries(
+      stdout.trim().split('\n').map((qator) => {
+        const i = qator.indexOf('=');
+        return i < 0 ? ['', ''] : [qator.slice(0, i).trim(), qator.slice(i + 1).trim()];
+      }),
+    );
+    const active = q.ActiveState;
+    const sub = q.SubState;
+    const since = q.ActiveEnterTimestamp;
+    const result = q.Result;
+
+    if (active !== 'active') {
+      const sabab = result && result !== 'success' ? `, ${result}` : '';
+      return { status: 'err', http: null, ms, note: `servis ${active || 'topilmadi'} (${sub}${sabab})` };
+    }
+    // Yaqinda ko'tarilgan bo'lsa — qulab-tiklanib turgan bo'lishi mumkin
+    const up = Date.now() - new Date(since).getTime();
+    if (Number.isFinite(up) && up > 0 && up < config.monitor.freshRestartMs) {
+      return { status: 'warn', http: null, ms, note: 'hozirgina qayta ishga tushdi' };
+    }
+    return { status: 'ok', http: null, ms, note: null };
+  } catch (e) {
+    const ms = Math.round(performance.now() - t0);
+    if (e.code === 'ENOENT') return { status: 'err', http: null, ms, note: 'systemctl topilmadi' };
+    return { status: 'err', http: null, ms, note: (e.stderr || e.message || 'systemd xatosi').trim().slice(0, 120) };
+  }
+}
+
+function attempt(p) {
+  if (p.kind === 'docker') return dockerAttempt(p.target);
+  if (p.kind === 'systemd') return systemdAttempt(p.target);
+  return httpAttempt(p.target, p.expect);
+}
 
 /**
  * Loyihani tekshiradi. Birinchi urinish yiqilsa qayta uradi —
