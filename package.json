@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "DIMON Agency AI jamoasi: Rita (loyihalar nazorati), Layla (obunalar), Momo (xatolar), Debra (boshliq)",
+  "description": "DIMON Agency AI jamoasi: Rita (loyihalar nazorati), Layla (obunalar), Sara (xatolar), Debra (boshliq)",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",

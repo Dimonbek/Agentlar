@@ -83,6 +83,28 @@ svg.plan { display: block; width: 100%; height: auto; touch-action: manipulation
 .tip-note { margin-top: 7px; padding-top: 7px; border-top: 1px solid var(--line);
             font-size: 11px; font-weight: 600; color: var(--err) }
 
+.karta-fon { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center;
+  padding: 20px; background: rgba(22,36,107,.42); backdrop-filter: blur(5px);
+  opacity: 0; pointer-events: none; transition: opacity .18s }
+.karta-fon.show { opacity: 1; pointer-events: auto }
+.karta { position: relative; background: var(--card); border-radius: 22px; box-shadow: var(--sh);
+  padding: 26px 28px 22px; width: min(340px, 100%); text-align: center;
+  transform: scale(.94); transition: transform .18s }
+.karta-fon.show .karta { transform: scale(1) }
+.karta-x { position: absolute; top: 14px; right: 16px; width: 30px; height: 30px; border: none;
+  border-radius: 50%; background: var(--line); color: var(--ink-2); font: 700 15px var(--f);
+  cursor: pointer; line-height: 1 }
+.karta-x:hover { background: var(--blue-s); color: var(--blue) }
+.karta-rasm { width: 132px; height: 132px; border-radius: 50%; margin: 0 auto 14px;
+  display: block; object-fit: cover; border: 4px solid var(--card); box-shadow: var(--sh) }
+.karta-n { font-size: 21px; font-weight: 800; letter-spacing: -.02em }
+.karta-r { font-size: 12.5px; color: var(--ink-3); font-weight: 600; margin-top: 2px }
+.karta-b { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
+  padding: 4px 12px; border-radius: 20px; margin-top: 12px }
+.karta-v { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+  font-size: 13px; color: var(--ink-2); line-height: 1.5 }
+.karta-v b { color: var(--ink) }
+
 .legend { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px 16px;
           padding-block: 14px 6px; font-size: 11.5px; font-weight: 600; color: var(--ink-2) }
 .lg { display: flex; align-items: center; gap: 6px }
@@ -114,6 +136,8 @@ svg.plan { display: block; width: 100%; height: auto; touch-action: manipulation
   <div class="tip" id="tip"></div>
 </div>
 
+<div class="karta-fon" id="karta-fon" role="dialog" aria-modal="true"><div class="karta" id="karta"></div></div>
+
 <div class="legend">
   <span class="lg"><i style="background:var(--ok)"></i>Ishlayapti</span>
   <span class="lg"><i style="background:var(--warn)"></i>Ogohlantirish</span>
@@ -137,7 +161,7 @@ const QIZLAR = [
     soch_turi:'tolqin', rasm:null },
   { nom:'Layla', kiyim:'#7c3aed', kiyim2:'#6128c9', soch:'#171320', teri:'#eec9a6',
     soch_turi:'tekis',  rasm:null },
-  { nom:'Momo',  kiyim:'#d97706', kiyim2:'#b45309', soch:'#2b1d14', teri:'#f0cfae',
+  { nom:'Sara',  kiyim:'#d97706', kiyim2:'#b45309', soch:'#2b1d14', teri:'#f0cfae',
     soch_turi:'dum',    rasm:null },
 ];
 
@@ -430,26 +454,50 @@ function tipKorsat(it, cx, cy) {
 const tipYop = () => { tipOchiq = false; tip.classList.remove('show'); };
 
 /* ═════════ 1-DARAJA: BINO ═════════ */
-const JOY = {
-  agentlar: { x:62,  y:62,  w:250, h:168 },
-  kgf:      { x:332, y:62,  w:376, h:168 },
-  subtitr:  { x:728, y:62,  w:210, h:168 },
-  infra:    { x:62,  y:360, w:250, h:218 },
-  tur:      { x:728, y:360, w:210, h:218 },
-};
+/**
+ * Xonalarni bino perimetri bo'ylab joylashtiradi. Nechta xona kelishidan
+ * qat'i nazar ishlaydi — markazda yo'lak, atrofida 8 tagacha joy.
+ */
+const ZAL = { x:332, y:206, w:336, h:248 };
+function xonaJoylari(n) {
+  const T = 284, Y = 132, Yo = 258, Ym = 248;
+  const joy = [
+    { x:58,  y:58,  w:T,  h:Y  },   // yuqori chap
+    { x:357, y:58,  w:T,  h:Y  },   // yuqori o'rta
+    { x:656, y:58,  w:T,  h:Y  },   // yuqori o'ng
+    { x:58,  y:206, w:Yo, h:Ym },   // chap
+    { x:684, y:206, w:Yo, h:Ym },   // o'ng
+    { x:58,  y:470, w:T,  h:Y  },   // past chap
+    { x:357, y:470, w:T,  h:Y  },   // past o'rta
+    { x:656, y:470, w:T,  h:Y  },   // past o'ng
+  ];
+  return joy.slice(0, Math.min(n, joy.length));
+}
+
+/** Ko'rinish tartibi — muhimlari yuqorida tursin. */
+const TARTIB = ['agentlar', 'kgf', 'subtitr', 'tur', 'crm', 'infra'];
+function tartibla(xonalar) {
+  return [...xonalar].sort((a, b) => {
+    const ia = TARTIB.indexOf(a.id), ib = TARTIB.indexOf(b.id);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  });
+}
 
 function binoChiz() {
   asos('DIMON AGENCY — UMUMIY REJA');
 
   // Markaziy yo'lak
-  const hall = { x:332, y:258, w:376, h:320 };
+  const hall = ZAL;
+  const xonalar = tartibla(BINO);
+  const joylar = xonaJoylari(xonalar.length);
   plan.append(gilam(hall.x, hall.y, hall.w, hall.h, '#2b52ee'));
   plan.append(el('text', { x:hall.x + hall.w/2, y:hall.y + 24, 'text-anchor':'middle', class:'capn' }, 'YO’LAK'));
   plan.append(gul(hall.x + 26, hall.y + hall.h - 22));
   plan.append(gul(hall.x + hall.w - 26, hall.y + hall.h - 22));
 
-  for (const x of BINO) {
-    const j = JOY[x.id];
+  xonalar.forEach((x, xi) => {
+    const j = joylar[xi];
+    if (!j) return;                     // joy tugadi — qolganlari chizilmaydi
     const g = el('g', { class:'room', tabindex:'0', role:'button',
       'aria-label':`${x.nom}, ${x.items.length} ta loyiha` });
     g.append(xonaRamka(j, x.rang));
@@ -481,12 +529,9 @@ function binoChiz() {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); kirish(x.id); }
     });
     plan.append(g);
-  }
+  });
 
-  qizlarniQoy(QIZLAR, hall, [
-    { x:hall.x+90,  y:hall.y+130 }, { x:hall.x+250, y:hall.y+110 },
-    { x:hall.x+150, y:hall.y+230 }, { x:hall.x+300, y:hall.y+215 },
-  ]);
+  qizlarniQoy(QIZLAR, hall);
 
   crumbs.innerHTML = '<b>Bino</b>';
   hint.textContent = 'xonani bosing — ichidagi loyihalar ochiladi';
@@ -546,10 +591,7 @@ function xonaChiz(id) {
     plan.append(g);
   });
 
-  const n = x.id === 'agentlar' ? 4 : 2;
-  qizlarniQoy(QIZLAR.slice(0, n), hall, Array.from({ length:n }, (_, i) => ({
-    x: hall.x + 120 + (i % 2) * 220, y: hall.y + 130 + Math.floor(i / 2) * 58,
-  })));
+  qizlarniQoy(x.id === 'agentlar' ? QIZLAR : QIZLAR.slice(0, 2), hall);
 
   crumbs.innerHTML = '<button type="button" id="orqaga">Bino</button><span>/</span><b>' + x.nom + '</b>';
   document.getElementById('orqaga').addEventListener('click', chiqish);
@@ -578,13 +620,44 @@ const qisqart = (s, w) => {
 
 /* ═════════ YURISH ═════════ */
 let yurar = [];
-function qizlarniQoy(royxat, hall, joylar) {
+
+/** Ish joyi — stol va monitor. Qizning OLDIDA turadi, o'tirgandek ko'rinsin. */
+function ishJoyi(x, y, rang) {
+  // Stol qizning ustiga chiziladi, shuning uchun bosishni o'tkazib yuborishi
+  // kerak — aks holda agentni bosib bo'lmaydi.
+  const g = el('g', { 'pointer-events': 'none' });
+  g.append(el('rect', { x:x-13, y:y-26, width:26, height:17, rx:2.5, fill:'#2b3550' }));
+  g.append(el('rect', { x:x-11, y:y-24, width:22, height:13, rx:1.5, fill:rang, opacity:.8 }));
+  g.append(el('rect', { x:x-3.5, y:y-9, width:7, height:4, fill:'#8e99b8' }));
+  g.append(el('rect', { x:x-32, y:y-6, width:64, height:11, rx:3.5, fill:'#cbb79b', filter:'url(#soya)' }));
+  g.append(el('rect', { x:x-28, y:y-4, width:56, height:4, rx:2, fill:'#ded0bb', opacity:.7 }));
+  return g;
+}
+
+/** Agentlar xonaning to'rt burchagida, o'z stolida o'tiradi. */
+function qizlarniQoy(royxat, hall) {
+  const burchak = [
+    { x: hall.x + 64,          y: hall.y + 108 },
+    { x: hall.x + hall.w - 64, y: hall.y + 108 },
+    { x: hall.x + 64,          y: hall.y + hall.h - 30 },
+    { x: hall.x + hall.w - 64, y: hall.y + hall.h - 30 },
+  ];
   yurar = royxat.map((q, i) => {
+    const p = burchak[i % burchak.length];
     const { g, tana } = qizChiz(q);
+    g.setAttribute('transform', 'translate(' + p.x + ', ' + p.y + ') scale(1.28)');
+    g.setAttribute('tabindex', '0');
+    g.setAttribute('role', 'button');
+    g.setAttribute('aria-label', q.nom + ' \u2014 batafsil');
+    g.style.cursor = 'pointer';
+    const och = (e) => { e.stopPropagation(); kartaOch(q.nom); };
+    g.addEventListener('click', och);
+    g.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); kartaOch(q.nom); }
+    });
     plan.append(g);
-    const p = joylar[i];
-    return { g, tana, x:p.x, y:p.y, tx:p.x, ty:p.y, kut:Math.random()*2.5,
-             hall, tez:20 + Math.random()*14, faza:Math.random()*6.3 };
+    plan.append(ishJoyi(p.x, p.y, q.kiyim));
+    return { tana, faza: Math.random() * 6.3 };
   });
 }
 
@@ -594,38 +667,65 @@ function kadr(now) {
   const dt = Math.min((now - oxirgi) / 1000, 0.05);
   oxirgi = now;
   for (const a of yurar) {
-    let yurmoqda = false;
-    if (!reduce) {
-      const dx = a.tx - a.x, dy = a.ty - a.y;
-      const d = Math.hypot(dx, dy);
-      if (d < 3) {
-        a.kut -= dt;
-        if (a.kut <= 0) {
-          a.tx = a.hall.x + 46 + Math.random() * (a.hall.w - 92);
-          a.ty = a.hall.y + 96 + Math.random() * (a.hall.h - 130);
-          a.kut = 1.5 + Math.random() * 3.5;
-        }
-      } else {
-        const k = Math.min(1, (a.tez * dt) / d);
-        a.x += dx * k; a.y += dy * k;
-        yurmoqda = true;
-        a.faza += dt * 7;
-      }
-    }
-    // Yurganda yengil tebranish — tirik ko'rinsin
-    const bob = yurmoqda ? Math.abs(Math.sin(a.faza)) * 1.6 : 0;
-    a.g.setAttribute('transform', `translate(${a.x.toFixed(1)}, ${a.y.toFixed(1)}) scale(1.28)`);
-    a.tana.setAttribute('transform', `translate(0, ${(-bob).toFixed(2)})`);
+    if (!reduce) a.faza += dt * 1.5;
+    // Joyida o'tiribdi — faqat yengil nafas, tirik ko'rinsin
+    a.tana.setAttribute('transform', 'translate(0, ' + (-Math.sin(a.faza) * 0.8).toFixed(2) + ')');
   }
   requestAnimationFrame(kadr);
 }
+
+/* ═════ AGENT KARTASI ═════ */
+const kFon = document.getElementById('karta-fon');
+const kKarta = document.getElementById('karta');
+
+function kartaOch(nom) {
+  const xona = BINO.find((x) => x.id === 'agentlar');
+  const it = xona && xona.items.find((i) => i.nom === nom);
+  const q = QIZLAR.find((z) => z.nom === nom);
+  if (!it || !q) return;
+
+  let rasm;
+  if (q.rasm) {
+    rasm = '<img class="karta-rasm" src="' + q.rasm + '" alt="' + nom + '">';
+  } else {
+    const sv = el('svg', { class:'karta-rasm', viewBox:'-34 -34 68 68', 'aria-hidden':'true' });
+    sv.append(portret(q, 32));
+    rasm = new XMLSerializer().serializeToString(sv);
+  }
+  kKarta.innerHTML =
+    '<button class="karta-x" type="button" aria-label="Yopish">&times;</button>' + rasm +
+    '<div class="karta-n">' + nom + '</div>' +
+    '<div class="karta-r">' + it.target + '</div>' +
+    '<span class="karta-b b-' + it.status + '">' + (SNOM[it.status] || it.status) + '</span>' +
+    '<div class="karta-v">' + kartaIzoh(it) + '</div>';
+  kKarta.querySelector('.karta-x').addEventListener('click', kartaYop);
+  kFon.classList.add('show');
+  kKarta.querySelector('.karta-x').focus();
+}
+
+function kartaIzoh(it) {
+  if (it.note) return 'Hali ishga tushmagan \u2014 <b>' + it.note + '</b>.';
+  if (it.at) {
+    const d = new Date(it.at);
+    return 'Oxirgi ish: <b>' +
+      d.toLocaleTimeString('uz-UZ', { hour:'2-digit', minute:'2-digit' }) + '</b>';
+  }
+  return 'Ishlab turibdi.';
+}
+
+const kartaYop = () => kFon.classList.remove('show');
+kFon.addEventListener('click', (e) => { if (e.target === kFon) kartaYop(); });
 
 /* ═════════ O'TISHLAR ═════════ */
 let daraja = 'bino';
 const kirish = (id) => { daraja = id; tipYop(); yurar = []; xonaChiz(id); };
 const chiqish = () => { daraja = 'bino'; tipYop(); yurar = []; binoChiz(); };
 
-addEventListener('keydown', (e) => { if (e.key === 'Escape' && daraja !== 'bino') chiqish(); });
+addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (kFon.classList.contains('show')) kartaYop();
+  else if (daraja !== 'bino') chiqish();
+});
 stage.addEventListener('click', (e) => { if (e.target === plan) tipYop(); });
 addEventListener('resize', () => { if (tipOchiq) tipYop(); });
 

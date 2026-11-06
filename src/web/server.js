@@ -36,7 +36,7 @@ function agentlar() {
     { nom: 'Debra', kind: 'agent', target: 'ertalabki hisobot',    status: 'warn', note: '4-bosqich' },
     { nom: 'Rita',  kind: 'agent', target: 'har 30 daqiqada ping', status: 'ok',   at: oxirgi },
     { nom: 'Layla', kind: 'agent', target: 'obunalar',             status: 'warn', note: '2-bosqich' },
-    { nom: 'Momo',  kind: 'agent', target: 'xatolar',              status: 'warn', note: '3-bosqich' },
+    { nom: 'Sara',  kind: 'agent', target: 'xatolar',              status: 'warn', note: '3-bosqich' },
   ];
 }
 
