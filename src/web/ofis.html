@@ -4,8 +4,8 @@
 
 <style>
 :root {
-  --out:    #dde5f6;   /* bino tashqarisi */
-  --floor:  #faf8f4;   /* iliq parket */
+  --out:    #dde5f6;
+  --floor:  #faf8f4;
   --floor2: #f2eee6;
   --wall:   #2a3663;
   --wall-l: #46568f;
@@ -38,7 +38,7 @@ body {
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 15px; letter-spacing: -.03em }
 .mark { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center;
         background: linear-gradient(145deg, var(--blue), #1a3fdb); box-shadow: 0 2px 10px rgba(43,82,238,.35) }
-.crumbs { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; color: var(--ink-3) }
+.crumbs { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-3) }
 .crumbs button { font: inherit; color: var(--blue); background: none; border: none; cursor: pointer; padding: 0 }
 .crumbs button:hover { text-decoration: underline }
 .crumbs b { color: var(--ink) }
@@ -52,7 +52,7 @@ svg.plan { display: block; width: 100%; height: auto; touch-action: manipulation
 .room:hover .glass { fill: rgba(43,82,238,.07) }
 .room:focus-visible .glass { fill: rgba(43,82,238,.12) }
 .plate { fill: var(--card); stroke: var(--line); stroke-width: 1 }
-.tag  { font: 800 13.5px var(--f); fill: var(--ink); letter-spacing: .01em }
+.tag  { font: 800 14px var(--f); fill: var(--ink); letter-spacing: .01em }
 .sub  { font: 500 10.5px var(--f); fill: var(--ink-3) }
 .cnt  { font: 700 10px var(--mono); fill: var(--blue) }
 .capn { font: 700 9.5px var(--mono); fill: var(--wall-l); letter-spacing: .14em }
@@ -64,6 +64,12 @@ svg.plan { display: block; width: 100%; height: auto; touch-action: manipulation
 .door-k  { font: 500 8.5px var(--mono); fill: var(--ink-3); pointer-events: none }
 .dot-ochiq { fill: #9aa6c6 }
 .dot-ok { fill: var(--ok) } .dot-warn { fill: var(--warn) } .dot-err { fill: var(--err) }
+
+.agent-g { cursor: pointer }
+.agent-g .halqa { transition: stroke-width .15s }
+.agent-g:hover .halqa, .agent-g:focus-visible .halqa { stroke-width: 3.4 }
+.agent-n { font: 700 9.5px var(--f); fill: var(--ink-2); pointer-events: none }
+.agent-r { font: 500 8.5px var(--f); fill: var(--ink-3); pointer-events: none }
 
 .tip { position: absolute; pointer-events: none; opacity: 0; transform: translateY(5px);
        transition: opacity .13s, transform .13s; z-index: 20;
@@ -95,8 +101,10 @@ svg.plan { display: block; width: 100%; height: auto; touch-action: manipulation
   border-radius: 50%; background: var(--line); color: var(--ink-2); font: 700 15px var(--f);
   cursor: pointer; line-height: 1 }
 .karta-x:hover { background: var(--blue-s); color: var(--blue) }
+/* Surat 1:1 qirqiladi; yuz odatda yuqorida bo'lgani uchun kadr tepaga suriladi */
 .karta-rasm { width: 132px; height: 132px; border-radius: 50%; margin: 0 auto 14px;
-  display: block; object-fit: cover; border: 4px solid var(--card); box-shadow: var(--sh) }
+  display: block; object-fit: cover; object-position: center 22%;
+  border: 4px solid var(--card); box-shadow: var(--sh) }
 .karta-n { font-size: 21px; font-weight: 800; letter-spacing: -.02em }
 .karta-r { font-size: 12.5px; color: var(--ink-3); font-weight: 600; margin-top: 2px }
 .karta-b { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
@@ -114,7 +122,7 @@ svg.plan { display: block; width: 100%; height: auto; touch-action: manipulation
        border: 1px solid var(--line); padding: 2px 7px; border-radius: 5px; color: var(--ink-2) }
 
 @media (max-width: 560px) {
-  .tag { font-size: 11.5px } .sub { font-size: 9px } .door-t { font-size: 9px } .door-k { display: none }
+  .tag { font-size: 12px } .sub { font-size: 9px } .door-t { font-size: 9px } .door-k { display: none }
   .tip { min-width: 165px; max-width: 215px }
 }
 </style>
@@ -128,7 +136,11 @@ svg.plan { display: block; width: 100%; height: auto; touch-action: manipulation
     </span>
     DIMON Agency
   </div>
-  <div class="crumbs"><span id="vaqt" style="font-weight:500">yuklanmoqda…</span><span style="color:var(--line)">|</span><span id="crumbs"></span></div>
+  <div class="crumbs">
+    <span id="vaqt" style="font-weight:500">yuklanmoqda…</span>
+    <span style="color:var(--line)">|</span>
+    <span id="crumbs"></span>
+  </div>
 </header>
 
 <div class="stage" id="stage">
@@ -146,24 +158,27 @@ svg.plan { display: block; width: 100%; height: auto; touch-action: manipulation
 <div class="hint"><span class="kbd">Esc</span> <span id="hint"></span></div>
 
 <script>
-/* ═════════ MA'LUMOT — keyin Rita bazasidan olinadi ═════════ */
 let BINO = [];   // /api/holat dan to'ldiriladi
 
-
-/* Qizlar — har biri o'z rangi, sochi va ko'ylagi bilan.
-   `rasm` — ixtiyoriy surat yo'li (masalan 'avatar/rita.jpg'). Berilsa
-   chizma o'rniga o'sha surat yumaloq qilib qo'yiladi; bo'lmasa chizma
-   ishlatiladi, ya'ni sahifa rasm fayllarisiz ham to'liq ishlaydi. */
+/* Agentlar — surat bo'lsa surat, bo'lmasa chizma ishlatiladi. */
 const QIZLAR = [
-  { nom:'Debra', kiyim:'#2b52ee', kiyim2:'#1a3fdb', soch:'#6b4226', teri:'#f3d2b3',
-    soch_turi:'uzun',   rasm:null },
-  { nom:'Rita',  kiyim:'#15a34a', kiyim2:'#0f7a37', soch:'#ddb469', teri:'#f7dcc0',
-    soch_turi:'tolqin', rasm:null },
-  { nom:'Layla', kiyim:'#7c3aed', kiyim2:'#6128c9', soch:'#171320', teri:'#eec9a6',
-    soch_turi:'tekis',  rasm:null },
-  { nom:'Sara',  kiyim:'#d97706', kiyim2:'#b45309', soch:'#2b1d14', teri:'#f0cfae',
-    soch_turi:'dum',    rasm:null },
+  { nom:'Debra', kiyim:'#2b52ee', soch:'#6b4226', teri:'#f3d2b3', soch_turi:'uzun',   rasm:null },
+  { nom:'Rita',  kiyim:'#15a34a', soch:'#ddb469', teri:'#f7dcc0', soch_turi:'tolqin', rasm:null },
+  { nom:'Layla', kiyim:'#7c3aed', soch:'#171320', teri:'#eec9a6', soch_turi:'tekis',  rasm:null },
+  { nom:'Sara',  kiyim:'#d97706', soch:'#2b1d14', teri:'#f0cfae', soch_turi:'dum',    rasm:null },
 ];
+
+/**
+ * Qaysi agent qaysi bo'limda ishlaydi.
+ * Rita hamma loyihani ping qiladi, shuning uchun har xonada ko'rinadi.
+ * Layla va Sara hali qurilmagan — faqat o'z xonalarida turadi.
+ */
+const ISH = {
+  agentlar: ['Debra', 'Rita', 'Layla', 'Sara'],
+  _boshqa:  ['Rita'],
+};
+const xonaAgentlari = (id) =>
+  (ISH[id] ?? ISH._boshqa).map((n) => QIZLAR.find((q) => q.nom === n)).filter(Boolean);
 
 /* ═════════ YORDAMCHILAR ═════════ */
 const NS = 'http://www.w3.org/2000/svg';
@@ -180,218 +195,112 @@ const crumbs = document.getElementById('crumbs');
 const hint = document.getElementById('hint');
 const W = 1000, H = 640;
 const KIND = { http:'sayt', docker:'konteyner', systemd:'servis', agent:'agent' };
-const SNOM = { ok:"ishlayapti", warn:'ogohlantirish', err:'ishlamayapti', ochiq:"o’chirilgan" };
+const SNOM = { ok:'ishlayapti', warn:'ogohlantirish', err:'ishlamayapti', ochiq:'o’chirilgan' };
 const holatOf = (x) => x.items.some(i => i.status === 'err') ? 'err'
   : x.items.some(i => i.status === 'warn') ? 'warn' : 'ok';
 
 /* ═════════ UMUMIY CHIZMA ═════════ */
 function asos(sarlavha) {
   plan.replaceChildren();
-
   const defs = el('defs');
-  // Yumshoq soya
   const f = el('filter', { id:'soya', x:'-30%', y:'-30%', width:'160%', height:'190%' });
   f.append(el('feDropShadow', { dx:0, dy:3, stdDeviation:4, 'flood-color':'#1b2547', 'flood-opacity':'.16' }));
   defs.append(f);
-  // Parket naqshi
   const p = el('pattern', { id:'parket', width:34, height:34, patternUnits:'userSpaceOnUse' });
   p.append(el('rect', { width:34, height:34, fill:'var(--floor)' }));
   p.append(el('path', { d:'M0 0H34M0 17H34', stroke:'var(--floor2)', 'stroke-width':1 }));
   p.append(el('path', { d:'M0 0V17M17 17V34', stroke:'var(--floor2)', 'stroke-width':1 }));
   defs.append(p);
   plan.append(defs);
-
-  // Tashqi fon
   plan.append(el('rect', { x:0, y:0, width:W, height:H, fill:'var(--out)' }));
-  // Bino: qalin devor + ichki pol
   plan.append(el('rect', { x:26, y:26, width:W-52, height:H-52, rx:14, fill:'var(--wall)', filter:'url(#soya)' }));
   plan.append(el('rect', { x:40, y:40, width:W-80, height:H-80, rx:8, fill:'url(#parket)' }));
   plan.append(el('text', { x:46, y:19, class:'capn' }, sarlavha));
 }
 
-/** Xona: qalin devorli to'rtburchak, ichi ochiq pol. */
 function xonaRamka(j, rang) {
   const g = el('g');
   g.append(el('rect', { x:j.x, y:j.y, width:j.w, height:j.h, rx:9, fill:'var(--wall)', filter:'url(#soya)' }));
   g.append(el('rect', { x:j.x+7, y:j.y+7, width:j.w-14, height:j.h-14, rx:5, fill:'var(--card)' }));
-  // Rangli chiziq — bo'lim belgisi
   g.append(el('rect', { x:j.x+7, y:j.y+7, width:j.w-14, height:4, rx:2, fill:rang, opacity:.85 }));
   return g;
 }
-
-/** Stol + stul — xona jonli ko'rinsin. */
-function stol(x, y, w = 46, h = 26, rang = '#cbb79b') {
-  const g = el('g');
-  g.append(el('rect', { x, y, width:w, height:h, rx:5, fill:rang, filter:'url(#soya)' }));
-  g.append(el('rect', { x:x+4, y:y+4, width:w-8, height:h-8, rx:3, fill:'#ded0bb', opacity:.6 }));
-  g.append(el('circle', { cx:x+w/2, cy:y+h+9, r:6.5, fill:'#9aa6c6' }));
-  g.append(el('circle', { cx:x+w/2, cy:y+h+9, r:4, fill:'#b4bedb' }));
-  return g;
-}
-/** Tuvakdagi gul. */
 function gul(x, y) {
   const g = el('g');
   g.append(el('path', { d:`M${x-5} ${y} L${x+5} ${y} L${x+3.5} ${y+9} L${x-3.5} ${y+9} Z`, fill:'#c08457' }));
-  g.append(el('circle', { cx:x,     cy:y-6, r:6,   fill:'#4ea36a' }));
+  g.append(el('circle', { cx:x, cy:y-6, r:6, fill:'#4ea36a' }));
   g.append(el('circle', { cx:x-4.5, cy:y-2, r:4.5, fill:'#3f8f5b' }));
   g.append(el('circle', { cx:x+4.5, cy:y-2, r:4.5, fill:'#5cb97c' }));
   return g;
 }
-/** Gilam. */
-function gilam(x, y, w, h, rang) {
-  const g = el('g');
-  g.append(el('rect', { x, y, width:w, height:h, rx:12, fill:rang, opacity:.1 }));
-  g.append(el('rect', { x:x+8, y:y+8, width:w-16, height:h-16, rx:8, fill:'none',
-    stroke:rang, 'stroke-width':1.5, opacity:.22 }));
-  return g;
-}
 
-/* ═════════ QIZLAR ═════════ */
-function qizChiz(q) {
-  const g = el('g');
-  g.append(el('ellipse', { cx:0, cy:2, rx:11, ry:3.4, fill:'#1b2547', opacity:.14 }));   // soya
-
-  const tana = el('g', { class:'tana' });
-  // oyoqlar
-  tana.append(el('path', { d:'M-3.4 -10 V-1.5 M3.4 -10 V-1.5', stroke:'#39415f',
-    'stroke-width':3, 'stroke-linecap':'round' }));
-  // ko'ylak
-  tana.append(el('path', { d:'M0 -31 C-6 -31 -8.5 -26 -9.5 -10 L9.5 -10 C8.5 -26 6 -31 0 -31 Z', fill:q.kiyim }));
-  tana.append(el('path', { d:'M0 -31 C-6 -31 -8.5 -26 -9.5 -10 L-2 -10 C-3 -24 -2 -29 0 -31 Z',
-    fill:q.kiyim2, opacity:.45 }));
-  // qo'llar
-  tana.append(el('path', { d:'M-7.5 -27 C-11 -23 -12 -19 -11.5 -15', stroke:q.teri,
-    'stroke-width':3, 'stroke-linecap':'round', fill:'none', class:'qol-ch' }));
-  tana.append(el('path', { d:'M7.5 -27 C11 -23 12 -19 11.5 -15', stroke:q.teri,
-    'stroke-width':3, 'stroke-linecap':'round', fill:'none', class:'qol-o' }));
-  // bo'yin
-  tana.append(el('rect', { x:-2, y:-35, width:4, height:5, rx:2, fill:q.teri }));
-
-  if (q.rasm) {
-    // Surat bo'lsa — bosh o'rniga yumaloq surat
-    const kid = 'bosh' + (++kesimN);
-    const d = el('defs');
-    const c = el('clipPath', { id:kid });
-    c.append(el('circle', { cx:0, cy:-40, r:8.4 }));
-    d.append(c);
-    tana.append(d);
-    tana.append(el('image', { x:-8.4, y:-48.4, width:16.8, height:16.8, href:q.rasm,
-      preserveAspectRatio:'xMidYMid slice', 'clip-path':`url(#${kid})` }));
-    tana.append(el('circle', { cx:0, cy:-40, r:8.4, fill:'none', stroke:'#fff', 'stroke-width':1.4 }));
-  } else {
-    tana.append(el('circle', { cx:0, cy:-40, r:7.4, fill:q.teri }));
-    tana.append(soch(q));
-    tana.append(el('circle', { cx:-2.6, cy:-40.5, r:1, fill:'#2a2332' }));
-    tana.append(el('circle', { cx:2.6,  cy:-40.5, r:1, fill:'#2a2332' }));
-    tana.append(el('path', { d:'M-2.4 -37.2 Q0 -35.4 2.4 -37.2', stroke:'#b5705f',
-      'stroke-width':1, fill:'none', 'stroke-linecap':'round' }));
-  }
-
-  g.append(tana);
-  g.append(el('text', { x:0, y:17, 'text-anchor':'middle',
-    style:'font:700 9.5px var(--f);fill:var(--ink-2)' }, q.nom));
-  return { g, tana };
-}
-
-/**
- * Yumaloq portret — yuz tafsilotlari faqat shu o'lchamda o'qiladi,
- * yuradigan kichik figurada emas.
- */
+/* ═════════ AGENT SURATI ═════════ */
 let kesimN = 0;
+/** Yumaloq surat — tana yo'q, faqat yuz. Surat bo'lmasa chizma. */
 function portret(q, R = 30) {
   const g = el('g');
-  const s = R / 30;                       // 30px uchun chizilgan, keyin masshtab
-  const kid = 'kesim' + (++kesimN);       // har nusxaga o'z id si — to'qnashmasin
+  const s = R / 30;
+  const kid = 'kesim' + (++kesimN);
   const in_ = el('g', { transform: `scale(${s})` });
 
   in_.append(el('circle', { cx:0, cy:0, r:30, fill:q.kiyim, opacity:.14 }));
-  in_.append(el('circle', { cx:0, cy:0, r:30, fill:'none', stroke:q.kiyim, 'stroke-width':2, opacity:.5 }));
 
-  // Surat berilgan bo'lsa — chizma o'rniga o'sha
   if (q.rasm) {
     const d = el('defs');
     const c = el('clipPath', { id:kid });
     c.append(el('circle', { cx:0, cy:0, r:28 }));
     d.append(c);
-    const im = el('image', { x:-28, y:-28, width:56, height:56, href:q.rasm,
-      preserveAspectRatio:'xMidYMid slice', 'clip-path':`url(#${kid})` });
-    in_.append(d, im);
-    g.append(in_);
-    return g;
+    // 1:1 qirqim, kadr tepaga surilgan — yuz markazda qolsin
+    in_.append(d, el('image', { x:-28, y:-28, width:56, height:56, href:q.rasm,
+      preserveAspectRatio:'xMidYMin slice', 'clip-path':`url(#${kid})` }));
+  } else {
+    const d = el('defs');
+    const c = el('clipPath', { id:kid });
+    c.append(el('circle', { cx:0, cy:0, r:28 }));
+    d.append(c);
+    const k = el('g', { 'clip-path':`url(#${kid})` });
+    k.append(el('path', { d:'M-26 34 C-26 16 -12 10 0 10 C12 10 26 16 26 34 Z', fill:q.kiyim }));
+    k.append(el('path', { d:'M-19 -4 C-21 12 -17 20 -13 24 L13 24 C17 20 21 12 19 -4 Z', fill:q.soch }));
+    k.append(el('path', { d:'M-5 -2 L-5 11 C-5 14 5 14 5 11 L5 -2 Z', fill:q.teri }));
+    k.append(el('path', { d:'M-14 -8 C-14 -22 -9 -28 0 -28 C9 -28 14 -22 14 -8 C14 3 8 11 0 11 C-8 11 -14 3 -14 -8 Z', fill:q.teri }));
+    k.append(el('circle', { cx:-14, cy:-6, r:3, fill:q.teri }));
+    k.append(el('circle', { cx:14,  cy:-6, r:3, fill:q.teri }));
+    k.append(oldSoch(q));
+    k.append(el('path', { d:'M-10 -14 Q-6.5 -16.4 -3 -14.6', stroke:q.soch, 'stroke-width':1.7, fill:'none', 'stroke-linecap':'round' }));
+    k.append(el('path', { d:'M3 -14.6 Q6.5 -16.4 10 -14', stroke:q.soch, 'stroke-width':1.7, fill:'none', 'stroke-linecap':'round' }));
+    for (const cx of [-6.4, 6.4]) {
+      k.append(el('ellipse', { cx, cy:-9, rx:3.1, ry:3.4, fill:'#fff' }));
+      k.append(el('circle', { cx, cy:-8.6, r:2, fill:'#4a3a2e' }));
+      k.append(el('circle', { cx, cy:-8.6, r:.95, fill:'#1a1118' }));
+      k.append(el('circle', { cx:cx+.9, cy:-9.8, r:.6, fill:'#fff' }));
+      k.append(el('path', { d:`M${cx-3.3} -11.6 Q${cx} -13.6 ${cx+3.3} -11.6`, stroke:'#30232c', 'stroke-width':1.3, fill:'none', 'stroke-linecap':'round' }));
+    }
+    k.append(el('path', { d:'M0 -5 L-1.4 -1.2 Q0 -.2 1.4 -1.2', stroke:'#c89a7e', 'stroke-width':1, fill:'none', 'stroke-linecap':'round' }));
+    k.append(el('path', { d:'M-3.4 3.6 Q0 2.2 3.4 3.6 Q0 7 -3.4 3.6 Z', fill:'#c4647a' }));
+    k.append(el('ellipse', { cx:-9, cy:-1.6, rx:3.2, ry:2, fill:'#e68a8a', opacity:.3 }));
+    k.append(el('ellipse', { cx:9,  cy:-1.6, rx:3.2, ry:2, fill:'#e68a8a', opacity:.3 }));
+    in_.append(d, k);
   }
-
-  const k = el('g');                      // doira ichiga kesiladi
-  k.setAttribute('clip-path', 'url(#' + kid + ')');
-  // yelka
-  k.append(el('path', { d:'M-26 34 C-26 16 -12 10 0 10 C12 10 26 16 26 34 Z', fill:q.kiyim }));
-  k.append(el('path', { d:'M-4 10 L0 18 L4 10 Z', fill:'#ffffff', opacity:.55 }));
-  // orqa soch
-  k.append(el('path', { d:'M-19 -4 C-21 12 -17 20 -13 24 L13 24 C17 20 21 12 19 -4 Z', fill:q.soch }));
-  // bo'yin
-  k.append(el('path', { d:'M-5 -2 L-5 11 C-5 14 5 14 5 11 L5 -2 Z', fill:q.teri }));
-  k.append(el('path', { d:'M-5 -2 L-5 6 C-2 9 2 9 5 6 L5 -2 Z', fill:'#000', opacity:.09 }));
-  // yuz
-  k.append(el('path', { d:'M-14 -8 C-14 -22 -9 -28 0 -28 C9 -28 14 -22 14 -8 C14 3 8 11 0 11 C-8 11 -14 3 -14 -8 Z', fill:q.teri }));
-  // quloqlar
-  k.append(el('circle', { cx:-14, cy:-6, r:3, fill:q.teri }));
-  k.append(el('circle', { cx:14,  cy:-6, r:3, fill:q.teri }));
-  // oldingi soch — turiga qarab
-  k.append(oldSoch(q));
-  // qoshlar
-  k.append(el('path', { d:'M-10 -14 Q-6.5 -16.4 -3 -14.6', stroke:q.soch, 'stroke-width':1.7,
-    fill:'none', 'stroke-linecap':'round' }));
-  k.append(el('path', { d:'M3 -14.6 Q6.5 -16.4 10 -14', stroke:q.soch, 'stroke-width':1.7,
-    fill:'none', 'stroke-linecap':'round' }));
-  // ko'zlar
-  for (const cx of [-6.4, 6.4]) {
-    k.append(el('ellipse', { cx, cy:-9, rx:3.1, ry:3.4, fill:'#fff' }));
-    k.append(el('circle', { cx, cy:-8.6, r:2, fill:'#4a3a2e' }));
-    k.append(el('circle', { cx, cy:-8.6, r:.95, fill:'#1a1118' }));
-    k.append(el('circle', { cx:cx + .9, cy:-9.8, r:.6, fill:'#fff' }));
-    k.append(el('path', { d:`M${cx - 3.3} -11.6 Q${cx} -13.6 ${cx + 3.3} -11.6`,
-      stroke:'#30232c', 'stroke-width':1.3, fill:'none', 'stroke-linecap':'round' }));
-  }
-  // burun va lab
-  k.append(el('path', { d:'M0 -5 L-1.4 -1.2 Q0 -.2 1.4 -1.2', stroke:'#c89a7e',
-    'stroke-width':1, fill:'none', 'stroke-linecap':'round' }));
-  k.append(el('path', { d:'M-3.4 3.6 Q0 2.2 3.4 3.6 Q0 7 -3.4 3.6 Z', fill:'#c4647a' }));
-  // yonoq qizilligi
-  k.append(el('ellipse', { cx:-9, cy:-1.6, rx:3.2, ry:2, fill:'#e68a8a', opacity:.3 }));
-  k.append(el('ellipse', { cx:9,  cy:-1.6, rx:3.2, ry:2, fill:'#e68a8a', opacity:.3 }));
-
-  const defs = el('defs');
-  const cp = el('clipPath', { id: kid });
-  cp.append(el('circle', { cx:0, cy:0, r:28 }));
-  defs.append(cp);
-  in_.append(defs, k);
+  in_.append(el('circle', { cx:0, cy:0, r:29, fill:'none', stroke:q.kiyim, 'stroke-width':2.4, class:'halqa' }));
   g.append(in_);
   return g;
 }
 
-/** Portret uchun oldingi soch — har personajga o'z turi. */
 function oldSoch(q) {
-  const s = el('g');
-  const c = q.soch;
-  if (q.soch_turi === 'kare') {
-    s.append(el('path', { d:'M-15 -9 C-16 -26 -9 -31 0 -31 C9 -31 16 -26 15 -9 L12 -13 C11 -22 4 -24 -2 -21 C-7 -18.6 -11 -19 -12.6 -14 Z', fill:c }));
-    s.append(el('path', { d:'M-15 -9 C-17 2 -16 10 -14.6 15 L-10.6 15 C-12 8 -12.6 0 -12.6 -9 Z', fill:c }));
-    s.append(el('path', { d:'M15 -9 C17 2 16 10 14.6 15 L10.6 15 C12 8 12.6 0 12.6 -9 Z', fill:c }));
-  } else if (q.soch_turi === 'uzun') {
+  const s = el('g'); const c = q.soch;
+  if (q.soch_turi === 'uzun') {
     s.append(el('path', { d:'M-15 -8 C-16.6 -26 -9 -32 0 -32 C9 -32 16.6 -26 15 -8 L11.6 -14 C9.6 -22 2 -25 -3.6 -21.4 C-8 -18.6 -11.6 -19.4 -12.6 -13 Z', fill:c }));
     s.append(el('path', { d:'M-15 -8 C-18.6 6 -17.6 16 -15.6 24 L-10.6 24 C-13 14 -13 2 -12.4 -8 Z', fill:c }));
     s.append(el('path', { d:'M15 -8 C18.6 6 17.6 16 15.6 24 L10.6 24 C13 14 13 2 12.4 -8 Z', fill:c }));
-    s.append(el('path', { d:'M-9 -24 Q0 -29 9 -24 Q0 -26.6 -9 -24 Z', fill:'#fff', opacity:.14 }));
   } else if (q.soch_turi === 'tolqin') {
     s.append(el('path', { d:'M-15 -8 C-17 -26 -8 -32 1 -32 C10 -32 17 -25 15 -8 L11.6 -15 C9 -23 0 -26 -5 -22 C-9 -18.6 -12 -18 -13 -12 Z', fill:c }));
     s.append(el('path', { d:'M-15 -8 C-19.6 8 -18 18 -15 25 L-9.6 25 C-13.6 15 -13.6 2 -12.4 -8 Z', fill:c }));
     s.append(el('path', { d:'M15 -8 C19 6 18 15 16 21 L11 21 C13.6 12 13 2 12.4 -8 Z', fill:c }));
     s.append(el('path', { d:'M-10 -25 Q-1 -30 8 -25 Q-1 -27.6 -10 -25 Z', fill:'#fff', opacity:.16 }));
   } else if (q.soch_turi === 'tekis') {
-    // o'rtadan ajratilgan uzun to'g'ri soch
     s.append(el('path', { d:'M-15 -8 C-16 -26 -8 -32 0 -32 C8 -32 16 -26 15 -8 L11.6 -14 C10 -22 5 -25 0 -24.6 C-5 -25 -10 -22 -11.6 -14 Z', fill:c }));
     s.append(el('path', { d:'M-15 -8 C-17 8 -16.6 18 -15.6 26 L-10 26 C-12.6 16 -12.6 2 -12.2 -8 Z', fill:c }));
     s.append(el('path', { d:'M15 -8 C17 8 16.6 18 15.6 26 L10 26 C12.6 16 12.6 2 12.2 -8 Z', fill:c }));
-    s.append(el('path', { d:'M0 -24.6 L0 -31', stroke:'#fff', 'stroke-width':1, opacity:.16 }));
   } else {
     s.append(el('path', { d:'M-15 -9 C-16 -27 -9 -31 0 -31 C9 -31 16 -27 15 -9 L12 -14 C10 -22 2 -24 -3 -21 C-7.6 -18.4 -11.6 -19 -12.6 -14 Z', fill:c }));
     s.append(el('path', { d:'M14 -16 C23 -12 24 2 19 11 C21 1 20 -9 12.6 -11.6 Z', fill:c }));
@@ -400,40 +309,37 @@ function oldSoch(q) {
   return s;
 }
 
-function soch(q) {
-  const s = el('g');
-  const c = q.soch;
-  if (q.soch_turi === 'kare') {           // to'g'ri kare
-    s.append(el('path', { d:'M-8 -40 C-8 -49 8 -49 8 -40 L8.6 -34 L5.6 -36 C5.6 -42 -5.6 -42 -5.6 -36 L-8.6 -34 Z', fill:c }));
-  } else if (q.soch_turi === 'uzun') {     // uzun to'lqinli
-    s.append(el('path', { d:'M-8.4 -40 C-8.4 -50 8.4 -50 8.4 -40 L10 -27 C7 -30 6 -34 5.6 -37 C5 -42 -5 -42 -5.6 -37 C-6 -34 -7 -30 -10 -27 Z', fill:c }));
-  } else if (q.soch_turi === 'tolqin') {   // yon ajratilgan to'lqin
-    s.append(el('path', { d:'M-8.4 -39 C-9 -50 9 -51 8.4 -39 L9.8 -29 C7.4 -31 6.4 -35 6 -38 C4 -43 -1 -44 -4 -41 C-6 -39.5 -6.6 -34 -9.6 -29 Z', fill:c }));
-  } else if (q.soch_turi === 'tekis') {    // o'rtadan ajratilgan uzun
-    s.append(el('path', { d:'M-8.4 -40 C-8.4 -50 8.4 -50 8.4 -40 L9.6 -26 C7 -29 6.2 -34 5.8 -37.4 C4 -40.6 -4 -40.6 -5.8 -37.4 C-6.2 -34 -7 -29 -9.6 -26 Z', fill:c }));
-  } else {                                  // dum (ponytail)
-    s.append(el('path', { d:'M-8 -40 C-8 -49 8 -49 8 -40 L6 -36 C5.6 -42 -5.6 -42 -6 -36 Z', fill:c }));
-    s.append(el('path', { d:'M7 -42 C13 -40 13 -31 10 -26 C11.5 -32 11 -38 6.5 -39.5 Z', fill:c }));
+/** Bosiladigan agent belgisi: surat + yonida nomi va vazifasi. */
+function agentBelgisi(q, x, y, R, matnBilan = true) {
+  const g = el('g', { class:'agent-g', tabindex:'0', role:'button',
+    'aria-label': q.nom + ' — batafsil' });
+  const pr = portret(q, R);
+  pr.setAttribute('transform', `translate(${x}, ${y})`);
+  g.append(pr);
+  if (matnBilan) {
+    const it = agentYozuvi(q.nom);
+    g.append(el('text', { x:x + R + 9, y:y - 1, class:'agent-n' }, q.nom));
+    g.append(el('text', { x:x + R + 9, y:y + 10, class:'agent-r' }, it ? it.target : ''));
+    if (it) g.append(el('circle', { cx:x + R + 3, cy:y - 5, r:3, class:'dot-' + it.status }));
   }
-  return s;
+  const och = (e) => { e.stopPropagation(); kartaOch(q.nom); };
+  g.addEventListener('click', och);
+  g.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); och(e); }
+  });
+  return g;
 }
+const agentYozuvi = (nom) =>
+  BINO.find((x) => x.id === 'agentlar')?.items.find((i) => i.nom === nom) ?? null;
 
 /* ═════════ MA'LUMOT OYNASI ═════════ */
 let tipOchiq = false;
 function tipKorsat(it, cx, cy) {
-  // Agent bo'lsa — sarlavhada portreti turadi
-  const qiz = it.kind === 'agent' ? QIZLAR.find(z => z.nom === it.nom) : null;
-  let rasm = '';
-  if (qiz) {
-    const sv = el('svg', { width:44, height:44, viewBox:'-23 -23 46 46', 'aria-hidden':'true' });
-    sv.append(portret(qiz, 21));
-    rasm = new XMLSerializer().serializeToString(sv);
-  }
   const q = [
-    `<div class="tip-h">${rasm}<span class="tip-n">${it.nom}</span>
-       <span class="tip-b b-${it.status}">${SNOM[it.status]}</span></div>`,
-    `<div class="tip-r"><span class="tip-k">Turi</span><span class="tip-v">${KIND[it.kind]}</span></div>`,
-    `<div class="tip-r"><span class="tip-k">${it.kind === 'http' ? 'Manzil' : it.kind === 'agent' ? 'Vazifa' : 'Nomi'}</span><span class="tip-v">${it.target}</span></div>`,
+    `<div class="tip-h"><span class="tip-n">${it.nom}</span>
+       <span class="tip-b b-${it.status}">${SNOM[it.status] ?? it.status}</span></div>`,
+    `<div class="tip-r"><span class="tip-k">Turi</span><span class="tip-v">${KIND[it.kind] ?? it.kind}</span></div>`,
+    `<div class="tip-r"><span class="tip-k">${it.kind === 'http' ? 'Manzil' : 'Nomi'}</span><span class="tip-v">${it.target}</span></div>`,
   ];
   if (it.http) q.push(`<div class="tip-r"><span class="tip-k">Javob</span><span class="tip-v">HTTP ${it.http}</span></div>`);
   if (it.ms != null) q.push(`<div class="tip-r"><span class="tip-k">Vaqt</span><span class="tip-v">${it.ms} ms</span></div>`);
@@ -445,93 +351,77 @@ function tipKorsat(it, cx, cy) {
   const r = plan.getBoundingClientRect();
   const k = r.width / W;
   const tw = tip.offsetWidth, th = tip.offsetHeight;
-  let x = Math.min(Math.max(8, cx * k - tw / 2), r.width - tw - 8);
-  let y = cy * k - th - 14;
-  if (y < 4) y = cy * k + 22;
-  tip.style.left = x + 'px';
-  tip.style.top = y + 'px';
+  tip.style.left = Math.min(Math.max(8, cx * k - tw / 2), r.width - tw - 8) + 'px';
+  const y = cy * k - th - 14;
+  tip.style.top = (y < 4 ? cy * k + 22 : y) + 'px';
 }
 const tipYop = () => { tipOchiq = false; tip.classList.remove('show'); };
 
 /* ═════════ 1-DARAJA: BINO ═════════ */
-/**
- * Xonalarni bino perimetri bo'ylab joylashtiradi. Nechta xona kelishidan
- * qat'i nazar ishlaydi — markazda yo'lak, atrofida 8 tagacha joy.
- */
-const ZAL = { x:332, y:206, w:336, h:248 };
-function xonaJoylari(n) {
-  const T = 284, Y = 132, Yo = 258, Ym = 248;
-  const joy = [
-    { x:58,  y:58,  w:T,  h:Y  },   // yuqori chap
-    { x:357, y:58,  w:T,  h:Y  },   // yuqori o'rta
-    { x:656, y:58,  w:T,  h:Y  },   // yuqori o'ng
-    { x:58,  y:206, w:Yo, h:Ym },   // chap
-    { x:684, y:206, w:Yo, h:Ym },   // o'ng
-    { x:58,  y:470, w:T,  h:Y  },   // past chap
-    { x:357, y:470, w:T,  h:Y  },   // past o'rta
-    { x:656, y:470, w:T,  h:Y  },   // past o'ng
-  ];
-  return joy.slice(0, Math.min(n, joy.length));
-}
-
-/** Ko'rinish tartibi — muhimlari yuqorida tursin. */
 const TARTIB = ['agentlar', 'kgf', 'subtitr', 'tur', 'crm', 'infra'];
-function tartibla(xonalar) {
-  return [...xonalar].sort((a, b) => {
-    const ia = TARTIB.indexOf(a.id), ib = TARTIB.indexOf(b.id);
-    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
-  });
+const tartibla = (x) => [...x].sort((a, b) => {
+  const ia = TARTIB.indexOf(a.id), ib = TARTIB.indexOf(b.id);
+  return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+});
+
+/** Xonalar butun polni to'ldiradi — yo'lak yo'q. */
+function xonaJoylari(n) {
+  const X0 = 58, X1 = 942, Y0 = 58, Y1 = 588, BO = 22;
+  const ust = Math.min(3, Math.max(1, n));
+  const qat = Math.ceil(n / ust);
+  const w = (X1 - X0 - BO * (ust - 1)) / ust;
+  const h = (Y1 - Y0 - BO * (qat - 1)) / qat;
+  return Array.from({ length: n }, (_, i) => ({
+    x: X0 + (i % ust) * (w + BO),
+    y: Y0 + Math.floor(i / ust) * (h + BO),
+    w, h,
+  }));
 }
 
 function binoChiz() {
   asos('DIMON AGENCY — UMUMIY REJA');
-
-  // Markaziy yo'lak
-  const hall = ZAL;
   const xonalar = tartibla(BINO);
   const joylar = xonaJoylari(xonalar.length);
-  plan.append(gilam(hall.x, hall.y, hall.w, hall.h, '#2b52ee'));
-  plan.append(el('text', { x:hall.x + hall.w/2, y:hall.y + 24, 'text-anchor':'middle', class:'capn' }, 'YO’LAK'));
-  plan.append(gul(hall.x + 26, hall.y + hall.h - 22));
-  plan.append(gul(hall.x + hall.w - 26, hall.y + hall.h - 22));
 
   xonalar.forEach((x, xi) => {
     const j = joylar[xi];
-    if (!j) return;                     // joy tugadi — qolganlari chizilmaydi
+    if (!j) return;
     const g = el('g', { class:'room', tabindex:'0', role:'button',
-      'aria-label':`${x.nom}, ${x.items.length} ta loyiha` });
+      'aria-label': `${x.nom}, ${x.items.length} ta` });
     g.append(xonaRamka(j, x.rang));
-
-    // Nom plitasi
     g.append(el('rect', { x:j.x+16, y:j.y+18, width:j.w-32, height:34, rx:7, class:'plate' }));
     g.append(el('circle', { cx:j.x+30, cy:j.y+35, r:5, class:'dot-' + holatOf(x) }));
     g.append(el('text', { x:j.x+42, y:j.y+32, class:'tag' }, x.nom));
     g.append(el('text', { x:j.x+42, y:j.y+45, class:'sub' }, x.izoh));
     g.append(el('text', { x:j.x+j.w-26, y:j.y+40, 'text-anchor':'end', class:'cnt' }, x.items.length + ' ta'));
 
-    // Mebel — xona bo'sh ko'rinmasin
-    const ustun = j.w > 300 ? 4 : 2;
+    // Loyihalar ro'yxati
+    const ustun = j.w > 300 ? 2 : 1;
+    const bw = (j.w - 42) / ustun;
     x.items.forEach((it, i) => {
-      const bw = (j.w - 42) / ustun;
       const sx = j.x + 21 + (i % ustun) * bw;
-      const sy = j.y + 66 + Math.floor(i / ustun) * 30;
-      if (sy + 18 > j.y + j.h - 10) return;
-      g.append(el('rect', { x:sx, y:sy, width:bw - 8, height:18, rx:5, fill:'#f4f6fc',
+      const sy = j.y + 64 + Math.floor(i / ustun) * 21;
+      if (sy + 19 > j.y + j.h - 56) return;
+      g.append(el('rect', { x:sx, y:sy, width:bw - 8, height:18, rx:5, fill:'#f5f7fd',
         stroke:'var(--line)', 'stroke-width':1 }));
       g.append(el('circle', { cx:sx + 9, cy:sy + 9, r:3.2, class:'dot-' + it.status }));
+      g.append(el('text', { x:sx + 17, y:sy + 12.5, class:'door-k' }, qisqart(it.nom, bw - 24, 5.2)));
     });
-    g.append(gul(j.x + j.w - 22, j.y + j.h - 16));
 
-    // Bosiladigan ustki qatlam
     g.append(el('rect', { x:j.x, y:j.y, width:j.w, height:j.h, rx:9, class:'glass' }));
     g.addEventListener('click', () => kirish(x.id));
     g.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); kirish(x.id); }
     });
     plan.append(g);
-  });
 
-  qizlarniQoy(QIZLAR, hall);
+    // Shu bo'limda ishlaydigan agentlar — xonaning pastida
+    const agentlar = xonaAgentlari(x.id);
+    const ay = j.y + j.h - 30;
+    agentlar.forEach((q, ai) => {
+      plan.append(agentBelgisi(q, j.x + 32 + ai * 46, ay, 17, agentlar.length === 1));
+    });
+  });
 
   crumbs.innerHTML = '<b>Bino</b>';
   hint.textContent = 'xonani bosing — ichidagi loyihalar ochiladi';
@@ -540,48 +430,39 @@ function binoChiz() {
 /* ═════════ 2-DARAJA: XONA ═════════ */
 function xonaChiz(id) {
   const x = BINO.find(r => r.id === id);
+  if (!x) return binoChiz();
   asos(x.nom + ' — ICHKI REJA');
 
-  const hall = { x:270, y:210, w:460, h:230 };
-  plan.append(gilam(hall.x, hall.y, hall.w, hall.h, x.rang));
+  // Markazda: bo'lim nomi va shu yerda ishlaydigan agentlar
+  const m = { x:280, y:196, w:440, h:248 };
+  plan.append(el('rect', { x:m.x, y:m.y, width:m.w, height:m.h, rx:14,
+    fill:x.rang, opacity:.07 }));
+  plan.append(el('rect', { x:m.x+10, y:m.y+10, width:m.w-20, height:m.h-20, rx:10,
+    fill:'none', stroke:x.rang, 'stroke-width':1.5, opacity:.22 }));
 
-  plan.append(el('rect', { x:hall.x + hall.w/2 - 105, y:hall.y + 16, width:210, height:48, rx:10,
-    class:'plate', filter:'url(#soya)' }));
-  plan.append(el('circle', { cx:hall.x + hall.w/2 - 86, cy:hall.y + 40, r:6, class:'dot-' + holatOf(x) }));
-  plan.append(el('text', { x:hall.x + hall.w/2 - 72, y:hall.y + 37,
-    style:'font:800 15px var(--f);fill:var(--ink)' }, x.nom));
-  plan.append(el('text', { x:hall.x + hall.w/2 - 72, y:hall.y + 52,
-    style:'font:500 10.5px var(--f);fill:var(--ink-3)' }, x.izoh + ' · ' + x.items.length + ' ta'));
+  plan.append(el('circle', { cx:m.x+26, cy:m.y+32, r:6, class:'dot-' + holatOf(x) }));
+  plan.append(el('text', { x:m.x+40, y:m.y+38, style:'font:800 19px var(--f);fill:var(--ink)' }, x.nom));
+  plan.append(el('text', { x:m.x+40, y:m.y+55, style:'font:500 11.5px var(--f);fill:var(--ink-3)' },
+    x.izoh + ' · ' + x.items.length + ' ta'));
+  plan.append(gul(m.x + m.w - 26, m.y + 34));
 
-  plan.append(stol(hall.x + 34, hall.y + hall.h - 76));
-  plan.append(stol(hall.x + hall.w - 80, hall.y + hall.h - 76));
-  plan.append(gul(hall.x + 24, hall.y + 34));
-  plan.append(gul(hall.x + hall.w - 24, hall.y + 34));
+  const agentlar = xonaAgentlari(x.id);
+  agentlar.forEach((q, i) => {
+    const ay = m.y + 104 + i * 58;
+    if (ay + 30 > m.y + m.h) return;
+    plan.append(agentBelgisi(q, m.x + 54, ay, 26, true));
+  });
 
-  const joylar = devorJoylari(x.items.length);
-  x.items.forEach((it, i) => {
-    const p = joylar[i];
+  // Loyihalar devor bo'ylab
+  devorJoylari(x.items.length).forEach((p, i) => {
+    const it = x.items[i];
     const g = el('g', { class:'door-g', tabindex:'0', role:'button',
-      'aria-label':`${it.nom} — ${SNOM[it.status]}` });
+      'aria-label': `${it.nom} — ${SNOM[it.status] ?? it.status}` });
     g.append(el('rect', { x:p.x, y:p.y, width:p.w, height:p.h, rx:8, class:'door', filter:'url(#soya)' }));
     g.append(el('rect', { x:p.x, y:p.y, width:4, height:p.h, rx:2, fill:x.rang, opacity:.8 }));
-
-    const qiz = it.kind === 'agent' ? QIZLAR.find(z => z.nom === it.nom) : null;
-    let matnX = p.x + 29;
-    if (qiz) {
-      const pr = portret(qiz, 16);
-      pr.setAttribute('transform', `translate(${p.x + 23}, ${p.y + p.h / 2})`);
-      g.append(pr);
-      g.append(el('circle', { cx:p.x + p.w - 13, cy:p.y + p.h/2, r:4.5, class:'dot-' + it.status }));
-      matnX = p.x + 44;
-    } else {
-      g.append(el('circle', { cx:p.x + 17, cy:p.y + p.h/2, r:4.5, class:'dot-' + it.status }));
-    }
-    g.append(el('text', { x:matnX, y:p.y + p.h/2 - 1, class:'door-t' },
-      qisqart(it.nom, p.w - (qiz ? 20 : 0))));
-    g.append(el('text', { x:matnX, y:p.y + p.h/2 + 10, class:'door-k' },
-      qiz ? it.target : KIND[it.kind]));
-
+    g.append(el('circle', { cx:p.x + 17, cy:p.y + p.h/2, r:4.5, class:'dot-' + it.status }));
+    g.append(el('text', { x:p.x + 29, y:p.y + p.h/2 - 1, class:'door-t' }, qisqart(it.nom, p.w)));
+    g.append(el('text', { x:p.x + 29, y:p.y + p.h/2 + 10, class:'door-k' }, KIND[it.kind] ?? it.kind));
     const kor = () => tipKorsat(it, p.x + p.w/2, p.y);
     g.addEventListener('pointerenter', kor);
     g.addEventListener('pointerleave', tipYop);
@@ -591,102 +472,41 @@ function xonaChiz(id) {
     plan.append(g);
   });
 
-  qizlarniQoy(x.id === 'agentlar' ? QIZLAR : QIZLAR.slice(0, 2), hall);
-
   crumbs.innerHTML = '<button type="button" id="orqaga">Bino</button><span>/</span><b>' + x.nom + '</b>';
   document.getElementById('orqaga').addEventListener('click', chiqish);
   hint.textContent = 'loyiha ustiga kursorni olib boring — holati ko’rinadi';
 }
 
-/** Loyihalarni devor bo'ylab joylashtiradi: yuqori, o'ng, past, chap. */
 function devorJoylari(n) {
   const DW = 186, DH = 38;
   const tomon = [[], [], [], []];
   for (let i = 0; i < n; i++) tomon[i % 4].push(i);
   const out = [];
   const qator = (list, fn) => list.forEach((idx, k) => { out[idx] = fn(k, list.length); });
-  qator(tomon[0], (k, m) => ({ x:270 + (460/m)*k + (460/m - Math.min(DW, 460/m - 10))/2, y:74,
-    w:Math.min(DW, 460/m - 10), h:DH }));
-  qator(tomon[2], (k, m) => ({ x:270 + (460/m)*k + (460/m - Math.min(DW, 460/m - 10))/2, y:528,
-    w:Math.min(DW, 460/m - 10), h:DH }));
-  qator(tomon[1], (k, m) => ({ x:762, y:130 + (380/m)*k + (380/m - DH)/2, w:DW, h:DH }));
-  qator(tomon[3], (k, m) => ({ x:52,  y:130 + (380/m)*k + (380/m - DH)/2, w:DW, h:DH }));
+  qator(tomon[0], (k, m) => ({ x:280 + (440/m)*k + (440/m - Math.min(DW, 440/m - 10))/2, y:68,
+    w:Math.min(DW, 440/m - 10), h:DH }));
+  qator(tomon[2], (k, m) => ({ x:280 + (440/m)*k + (440/m - Math.min(DW, 440/m - 10))/2, y:534,
+    w:Math.min(DW, 440/m - 10), h:DH }));
+  qator(tomon[1], (k, m) => ({ x:758, y:124 + (392/m)*k + (392/m - DH)/2, w:DW, h:DH }));
+  qator(tomon[3], (k, m) => ({ x:56,  y:124 + (392/m)*k + (392/m - DH)/2, w:DW, h:DH }));
   return out;
 }
-const qisqart = (s, w) => {
-  const max = Math.floor((w - 36) / 5.5);
-  return s.length > max ? s.slice(0, max - 1) + '…' : s;
+const qisqart = (s, w, px = 5.5) => {
+  const max = Math.floor((w - 36) / px);
+  return s.length > max ? s.slice(0, Math.max(1, max - 1)) + '…' : s;
 };
 
-/* ═════════ YURISH ═════════ */
-let yurar = [];
-
-/** Ish joyi — stol va monitor. Qizning OLDIDA turadi, o'tirgandek ko'rinsin. */
-function ishJoyi(x, y, rang) {
-  // Stol qizning ustiga chiziladi, shuning uchun bosishni o'tkazib yuborishi
-  // kerak — aks holda agentni bosib bo'lmaydi.
-  const g = el('g', { 'pointer-events': 'none' });
-  g.append(el('rect', { x:x-13, y:y-26, width:26, height:17, rx:2.5, fill:'#2b3550' }));
-  g.append(el('rect', { x:x-11, y:y-24, width:22, height:13, rx:1.5, fill:rang, opacity:.8 }));
-  g.append(el('rect', { x:x-3.5, y:y-9, width:7, height:4, fill:'#8e99b8' }));
-  g.append(el('rect', { x:x-32, y:y-6, width:64, height:11, rx:3.5, fill:'#cbb79b', filter:'url(#soya)' }));
-  g.append(el('rect', { x:x-28, y:y-4, width:56, height:4, rx:2, fill:'#ded0bb', opacity:.7 }));
-  return g;
-}
-
-/** Agentlar xonaning to'rt burchagida, o'z stolida o'tiradi. */
-function qizlarniQoy(royxat, hall) {
-  const burchak = [
-    { x: hall.x + 64,          y: hall.y + 108 },
-    { x: hall.x + hall.w - 64, y: hall.y + 108 },
-    { x: hall.x + 64,          y: hall.y + hall.h - 30 },
-    { x: hall.x + hall.w - 64, y: hall.y + hall.h - 30 },
-  ];
-  yurar = royxat.map((q, i) => {
-    const p = burchak[i % burchak.length];
-    const { g, tana } = qizChiz(q);
-    g.setAttribute('transform', 'translate(' + p.x + ', ' + p.y + ') scale(1.28)');
-    g.setAttribute('tabindex', '0');
-    g.setAttribute('role', 'button');
-    g.setAttribute('aria-label', q.nom + ' \u2014 batafsil');
-    g.style.cursor = 'pointer';
-    const och = (e) => { e.stopPropagation(); kartaOch(q.nom); };
-    g.addEventListener('click', och);
-    g.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); kartaOch(q.nom); }
-    });
-    plan.append(g);
-    plan.append(ishJoyi(p.x, p.y, q.kiyim));
-    return { tana, faza: Math.random() * 6.3 };
-  });
-}
-
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-let oxirgi = performance.now();
-function kadr(now) {
-  const dt = Math.min((now - oxirgi) / 1000, 0.05);
-  oxirgi = now;
-  for (const a of yurar) {
-    if (!reduce) a.faza += dt * 1.5;
-    // Joyida o'tiribdi — faqat yengil nafas, tirik ko'rinsin
-    a.tana.setAttribute('transform', 'translate(0, ' + (-Math.sin(a.faza) * 0.8).toFixed(2) + ')');
-  }
-  requestAnimationFrame(kadr);
-}
-
-/* ═════ AGENT KARTASI ═════ */
+/* ═════════ AGENT KARTASI ═════════ */
 const kFon = document.getElementById('karta-fon');
 const kKarta = document.getElementById('karta');
 
 function kartaOch(nom) {
-  const xona = BINO.find((x) => x.id === 'agentlar');
-  const it = xona && xona.items.find((i) => i.nom === nom);
+  const it = agentYozuvi(nom);
   const q = QIZLAR.find((z) => z.nom === nom);
   if (!it || !q) return;
-
   let rasm;
   if (q.rasm) {
-    rasm = '<img class="karta-rasm" src="' + q.rasm + '" alt="' + nom + '">';
+    rasm = `<img class="karta-rasm" src="${q.rasm}" alt="${nom}">`;
   } else {
     const sv = el('svg', { class:'karta-rasm', viewBox:'-34 -34 68 68', 'aria-hidden':'true' });
     sv.append(portret(q, 32));
@@ -694,32 +514,29 @@ function kartaOch(nom) {
   }
   kKarta.innerHTML =
     '<button class="karta-x" type="button" aria-label="Yopish">&times;</button>' + rasm +
-    '<div class="karta-n">' + nom + '</div>' +
-    '<div class="karta-r">' + it.target + '</div>' +
-    '<span class="karta-b b-' + it.status + '">' + (SNOM[it.status] || it.status) + '</span>' +
-    '<div class="karta-v">' + kartaIzoh(it) + '</div>';
+    `<div class="karta-n">${nom}</div>` +
+    `<div class="karta-r">${it.target}</div>` +
+    `<span class="karta-b b-${it.status}">${SNOM[it.status] ?? it.status}</span>` +
+    `<div class="karta-v">${kartaIzoh(it)}</div>`;
   kKarta.querySelector('.karta-x').addEventListener('click', kartaYop);
   kFon.classList.add('show');
   kKarta.querySelector('.karta-x').focus();
 }
-
 function kartaIzoh(it) {
-  if (it.note) return 'Hali ishga tushmagan \u2014 <b>' + it.note + '</b>.';
+  if (it.note) return `Hali ishga tushmagan — <b>${it.note}</b>.`;
   if (it.at) {
-    const d = new Date(it.at);
     return 'Oxirgi ish: <b>' +
-      d.toLocaleTimeString('uz-UZ', { hour:'2-digit', minute:'2-digit' }) + '</b>';
+      new Date(it.at).toLocaleTimeString('uz-UZ', { hour:'2-digit', minute:'2-digit' }) + '</b>';
   }
   return 'Ishlab turibdi.';
 }
-
 const kartaYop = () => kFon.classList.remove('show');
 kFon.addEventListener('click', (e) => { if (e.target === kFon) kartaYop(); });
 
 /* ═════════ O'TISHLAR ═════════ */
 let daraja = 'bino';
-const kirish = (id) => { daraja = id; tipYop(); yurar = []; xonaChiz(id); };
-const chiqish = () => { daraja = 'bino'; tipYop(); yurar = []; binoChiz(); };
+const kirish = (id) => { daraja = id; tipYop(); xonaChiz(id); };
+const chiqish = () => { daraja = 'bino'; tipYop(); binoChiz(); };
 
 addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
@@ -730,16 +547,13 @@ stage.addEventListener('click', (e) => { if (e.target === plan) tipYop(); });
 addEventListener('resize', () => { if (tipOchiq) tipYop(); });
 
 /* ═════════ JONLI MA'LUMOT ═════════ */
-const SNOM2 = { ...SNOM, ochiq: "o’chirilgan" };
 let oxirgiXato = null;
-
 async function yangila() {
   try {
     const r = await fetch('/api/holat', { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
     BINO = d.xonalar;
-    // Surat bor agentlarga yo'lini qo'yamiz, qolganlari chizma bo'lib qoladi
     for (const q of QIZLAR) q.rasm = d.avatarlar?.[q.nom.toLowerCase()] ?? null;
     oxirgiXato = null;
     vaqtniKorsat(d.yangilandi);
@@ -747,21 +561,17 @@ async function yangila() {
     oxirgiXato = e.message;
     vaqtniKorsat(null);
   }
-  // Ko'rinayotgan darajani qayta chizamiz
   if (daraja === 'bino' || !BINO.some(x => x.id === daraja)) { daraja = 'bino'; binoChiz(); }
   else xonaChiz(daraja);
 }
-
 function vaqtniKorsat(ts) {
   const e = document.getElementById('vaqt');
-  if (!e) return;
   if (oxirgiXato) { e.textContent = 'ulanmadi — ' + oxirgiXato; e.style.color = 'var(--err)'; return; }
-  const d = new Date(ts);
-  e.textContent = 'yangilandi ' + d.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+  e.textContent = 'yangilandi ' +
+    new Date(ts).toLocaleTimeString('uz-UZ', { hour:'2-digit', minute:'2-digit' });
   e.style.color = '';
 }
 
 yangila();
 setInterval(yangila, 60_000);
-requestAnimationFrame(kadr);
 </script>
