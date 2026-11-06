@@ -161,6 +161,8 @@ h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; margin-top: 4px
 .mini:hover { background: var(--blue-s) }
 .mini-rasm { width: 42px; height: 42px; border-radius: 12px; object-fit: cover;
              object-position: center 18%; flex-shrink: 0 }
+.r-rasm { width: 38px; height: 38px; border-radius: 11px; object-fit: cover;
+          object-position: center 18%; flex-shrink: 0 }
 .mini-n { display: block; font-weight: 700; font-size: 13px }
 .mini-r { display: block; font-size: 11px; color: var(--ink-3); font-weight: 600 }
 
@@ -358,15 +360,22 @@ function xonaKor(id) {
           <span class="pill" style="background:${rang}1c;color:${rang}">Mas’ul: ${esc(kim.join(', '))}</span>
         </div></div></div>
     <div class="panel">
-      <div class="panel-h">${svg(ICO[x.id] ?? ICO.infra, rang, 17)} Loyihalar — birini bosing</div>
-      ${x.items.map((i) => `
-        <div class="r" ${i.kalit ? `data-loyiha="${esc(i.kalit)}" tabindex="0" role="button"` : ''}>
-          <i class="d-${i.status}"></i>
+      <div class="panel-h">${svg(ICO[x.id] ?? ICO.infra, rang, 17)} ${
+        x.id === 'agentlar' ? 'Jamoa — birini bosing' : 'Loyihalar — birini bosing'}</div>
+      ${x.items.map((i) => {
+        // Agent bo'lsa nuqta o'rniga surati turadi va o'z sahifasiga olib boradi
+        const agentmi = i.kind === 'agent';
+        const bos = agentmi ? `data-agent="${esc(i.nom)}"`
+                  : i.kalit ? `data-loyiha="${esc(i.kalit)}"` : '';
+        return `<div class="r" ${bos} ${bos ? 'tabindex="0" role="button"' : ''}>
+          ${agentmi ? rasmYoki(i.nom, 'r-rasm') : `<i class="d-${i.status}"></i>`}
           <span style="min-width:0"><span class="r-n">${esc(i.nom)}</span><br>
             <span class="r-t">${esc(i.target)}</span></span>
           <span class="r-m"><span class="pill b-${i.status}">${SNOM[i.status] ?? i.status}</span>
-            <span class="r-ms">${KIND[i.kind] ?? i.kind}${i.http ? ' · ' + i.http : ''}${i.ms != null ? ' · ' + i.ms + 'ms' : ''}</span>
-          </span></div>`).join('')}
+            <span class="r-ms">${agentmi ? esc(VAZIFA[i.nom] ?? 'agent')
+              : (KIND[i.kind] ?? i.kind) + (i.http ? ' · ' + i.http : '') + (i.ms != null ? ' · ' + i.ms + 'ms' : '')}</span>
+          </span></div>`;
+      }).join('')}
     </div>`;
 }
 
