@@ -161,11 +161,6 @@ h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; margin-top: 4px
 .mini:hover { background: var(--blue-s) }
 .mini-rasm { width: 42px; height: 42px; border-radius: 12px; object-fit: cover;
              object-position: center 18%; flex-shrink: 0 }
-/* Agentlar ro'yxatida surat katta — yuzi tanilsin */
-.r-rasm { width: 68px; height: 68px; border-radius: 16px; object-fit: cover;
-          object-position: center 16%; flex-shrink: 0; box-shadow: var(--sh) }
-.r:has(.r-rasm) { padding: 16px 20px; gap: 15px }
-.r:has(.r-rasm) .r-n { font-size: 15px }
 .mini-n { display: block; font-weight: 700; font-size: 13px }
 .mini-r { display: block; font-size: 11px; color: var(--ink-3); font-weight: 600 }
 
@@ -362,25 +357,55 @@ function xonaKor(id) {
           <span class="pill b-${h}">${SNOM[h]}</span>
           <span class="pill" style="background:${rang}1c;color:${rang}">Mas’ul: ${esc(kim.join(', '))}</span>
         </div></div></div>
+    ${x.id === 'agentlar'
+      ? `<div class="grid">${x.items.map(agentKarta).join('')}</div>`
+      : loyihaRoyxati(x, rang)}`;
+}
+
+/** Agent kartochkasi — bosh sahifadagidek katta surat bilan. */
+function agentKarta(i) {
+  const rang = { Debra:'#4f7cf7', Rita:'#15a34a', Layla:'#8b5cf6', Sara:'#ea8a07' }[i.nom] ?? '#6c4ef0';
+  const a = AVATAR[i.nom.toLowerCase()];
+  const bolim = BINO.filter((x) => x.id !== 'agentlar' && ish(x.id).kim.includes(i.nom));
+  const jami = bolim.reduce((n, x) => n + x.items.length, 0);
+  return `<article class="c" tabindex="0" role="button" data-agent="${esc(i.nom)}"
+      aria-label="${esc(i.nom)} — ${esc(i.target)}">
+    <span class="c-fon" style="background:linear-gradient(135deg,${rang}26,${rang}0a 60%,transparent)"></span>
+    ${a ? `<img class="c-rasm" src="${a}" alt="" aria-hidden="true">` : ''}
+    <div class="c-top">
+      <span><span class="c-n" style="font-size:19px">${esc(i.nom)}</span>
+        <span class="c-s">${esc(VAZIFA[i.nom] ?? 'AI agent')}</span></span>
+    </div>
+    <div class="c-list">
+      <div class="c-li"><i class="d-${i.status}"></i><span>${SNOM[i.status] ?? i.status}</span></div>
+      <div class="c-li" style="color:var(--ink-2)"><i style="background:${rang}"></i>
+        <span>${esc(i.target)}</span></div>
+      ${bolim.length ? `<div class="c-li" style="color:var(--ink-2)"><i style="background:${rang}66"></i>
+        <span>${bolim.length} bo‘lim · ${jami} loyiha</span></div>` : ''}
+      ${i.note ? `<div class="c-yana">${esc(i.note)}</div>` : ''}
+    </div>
+    <div class="c-bot">
+      <button class="c-btn" type="button" data-agent="${esc(i.nom)}">Batafsil
+        ${svg('<path d="M5 12h13M13 6l6 6-6 6"/>', 'currentColor', 13)}</button>
+    </div></article>`;
+}
+
+/** Oddiy bo'limlar uchun loyiha ro'yxati. */
+function loyihaRoyxati(x, rang) {
+  return `
     <div class="panel">
-      <div class="panel-h">${svg(ICO[x.id] ?? ICO.infra, rang, 17)} ${
-        x.id === 'agentlar' ? 'Jamoa — birini bosing' : 'Loyihalar — birini bosing'}</div>
-      ${x.items.map((i) => {
-        // Agent bo'lsa nuqta o'rniga surati turadi va o'z sahifasiga olib boradi
-        const agentmi = i.kind === 'agent';
-        const bos = agentmi ? `data-agent="${esc(i.nom)}"`
-                  : i.kalit ? `data-loyiha="${esc(i.kalit)}"` : '';
-        return `<div class="r" ${bos} ${bos ? 'tabindex="0" role="button"' : ''}>
-          ${agentmi ? rasmYoki(i.nom, 'r-rasm') : `<i class="d-${i.status}"></i>`}
+      <div class="panel-h">${svg(ICO[x.id] ?? ICO.infra, rang, 17)} Loyihalar — birini bosing</div>
+      ${x.items.map((i) => `
+        <div class="r" ${i.kalit ? `data-loyiha="${esc(i.kalit)}" tabindex="0" role="button"` : ''}>
+          <i class="d-${i.status}"></i>
           <span style="min-width:0"><span class="r-n">${esc(i.nom)}</span><br>
             <span class="r-t">${esc(i.target)}</span></span>
           <span class="r-m"><span class="pill b-${i.status}">${SNOM[i.status] ?? i.status}</span>
-            <span class="r-ms">${agentmi ? esc(VAZIFA[i.nom] ?? 'agent')
-              : (KIND[i.kind] ?? i.kind) + (i.http ? ' · ' + i.http : '') + (i.ms != null ? ' · ' + i.ms + 'ms' : '')}</span>
-          </span></div>`;
-      }).join('')}
+            <span class="r-ms">${(KIND[i.kind] ?? i.kind)}${i.http ? ' · ' + i.http : ''}${i.ms != null ? ' · ' + i.ms + 'ms' : ''}</span>
+          </span></div>`).join('')}
     </div>`;
 }
+
 
 /* ── Loyiha: to'liq sahifa ── */
 function loyihaKor(kalit) {
