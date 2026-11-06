@@ -376,3 +376,51 @@ export function recentChecks(key, limit = 48) {
 export function pruneChecks(days = 30) {
   db.prepare('DELETE FROM checks WHERE at < ?').run(Date.now() - days * 86400_000);
 }
+
+// ---- Debra: hisobot uchun ----
+
+db.exec(`
+  -- Kichik kalit-qiymat: oxirgi eslatma vaqti kabi mayda holatlar.
+  CREATE TABLE IF NOT EXISTS kv (
+    kalit   TEXT PRIMARY KEY,
+    qiymat  TEXT,
+    at      INTEGER NOT NULL
+  );
+`);
+
+const _kvOl = db.prepare('SELECT qiymat FROM kv WHERE kalit = ?');
+const _kvQoy = db.prepare('INSERT OR REPLACE INTO kv (kalit, qiymat, at) VALUES (?, ?, ?)');
+export const kvOl = (kalit) => _kvOl.get(kalit)?.qiymat ?? null;
+export const kvQoy = (kalit, qiymat) => { _kvQoy.run(kalit, String(qiymat), Date.now()); };
+
+/**
+ * Berilgan davrdagi holat o'zgarishlari: qaysi loyiha qachon yiqildi
+ * va qachon qaytdi. `checks` da har tekshiruv yozilgani uchun ketma-ket
+ * yozuvlarni solishtirib, faqat o'zgargan nuqtalar olinadi.
+ */
+export function holatOzgarishlari(fromMs, toMs = Date.now()) {
+  const nomlar = new Map(listProjects().map((p) => [p.key, p.name]));
+  const qatorlar = db
+    .prepare('SELECT pkey, status, note, at FROM checks WHERE at >= ? AND at <= ? ORDER BY pkey, at')
+    .all(fromMs, toMs);
+
+  const chiq = [];
+  let oldingi = null;
+  let oldingiKey = null;
+  for (const c of qatorlar) {
+    if (c.pkey !== oldingiKey) { oldingiKey = c.pkey; oldingi = null; }
+    const yiqilgan = c.status === 'err';
+    const oldinYiqilgan = oldingi === 'err';
+    if (oldingi !== null && yiqilgan !== oldinYiqilgan) {
+      chiq.push({
+        kalit: c.pkey,
+        nom: nomlar.get(c.pkey) ?? c.pkey,
+        turi: yiqilgan ? 'yiqildi' : 'qaytdi',
+        sabab: c.note,
+        at: c.at,
+      });
+    }
+    oldingi = c.status;
+  }
+  return chiq.sort((a, b) => a.at - b.at);
+}

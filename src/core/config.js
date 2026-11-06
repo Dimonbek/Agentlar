@@ -61,10 +61,18 @@ export const config = {
     cron: process.env.CRON_LESSON || '0 10 * * *',
   },
 
-  // Debra — Railway serverlar nazorati
+  // Debra — Railway (faqat chatdagi buyruqlar uchun qoldi)
   railway: {
     token: process.env.RAILWAY_API_TOKEN || '',
-    cron: process.env.CRON_SERVERS || '30 8 * * *',
+  },
+
+  // Debra — hisobotlar
+  hisobot: {
+    kunlik: process.env.CRON_KUNLIK || '30 8 * * *',       // har kuni 08:30
+    haftalik: process.env.CRON_HAFTALIK || '0 20 * * 0',   // yakshanba 20:00
+    // Yiqilgan loyiha shuncha soatdan keyin ham tuzalmasa — qayta eslatma
+    eslatmaSoat: num('ESLATMA_SOAT', 3),
+    eslatmaCron: process.env.CRON_ESLATMA || '10 * * * *', // har soat 10-daqiqada
   },
 
   // Debra — Telegram Business (lichka xabarlari)

@@ -9,7 +9,8 @@
     "start": "node src/index.js",
     "rita:ping": "node src/index.js --once=rita:ping",
     "lingo:lesson": "node src/index.js --once=lingo:lesson",
-    "kotib:servers": "node src/index.js --once=kotib:servers"
+    "debra:kunlik": "node src/index.js --once=debra:kunlik",
+    "debra:haftalik": "node src/index.js --once=debra:haftalik"
   },
   "engines": {
     "node": ">=22"

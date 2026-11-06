@@ -1,6 +1,6 @@
 import { startRadar, jobs } from './agents/radar/index.js';
 import { startLingo, lingoJobs } from './agents/lingo/index.js';
-import { startMonitor, monitorJobs } from './agents/kotib/monitor.js';
+import { startHisobot, hisobotJobs } from './agents/kotib/hisobot.js';
 import { personas } from './core/personas.js';
 import { createChatBot } from './core/interactive.js';
 import { attachBusiness, BUSINESS_UPDATES } from './agents/kotib/business.js';
@@ -10,7 +10,7 @@ import { log } from './core/logger.js';
 
 const onceArg = process.argv.find((a) => a.startsWith('--once='));
 
-const allJobs = { ...jobs, ...lingoJobs, ...monitorJobs };
+const allJobs = { ...jobs, ...lingoJobs, ...hisobotJobs };
 
 if (onceArg) {
   // Bir martalik ishga tushirish: npm run radar:news / npm run lingo:lesson
@@ -35,8 +35,9 @@ else log.info('Rita 🛰 dam olmoqda — loyihalar nazorati o\'chirilgan');
 if (isActive('layla')) startLingo();
 else log.info('Layla 📚 dam olmoqda — dars jadvali o\'chirilgan');
 
-// 3. Debra — serverlar holati nazorati
-if (isActive('debra')) startMonitor();
+// 3. Debra — kunlik va haftalik hisobot, uzoq yiqilganlarga eslatma
+if (isActive('debra')) startHisobot();
+else log.info('Debra 🗂 dam olmoqda — hisobot jadvali o\'chirilgan');
 
 // 4. Ofis sahifasi — loyihalar holatini ko'rsatadi
 if (config.web.enabled) startWeb();

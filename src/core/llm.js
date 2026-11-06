@@ -52,6 +52,21 @@ export async function askJson({ system, prompt, schema, maxTokens = 8000 }) {
   return parseJson(text);
 }
 
+/** Modeldan oddiy matn oladi — hisobot kabi erkin matnlar uchun. */
+export async function askText({ system, prompt, maxTokens = 2000 }) {
+  const model = config.llm.model;
+  const { adaptive, effort } = caps(model);
+  const req = {
+    model,
+    max_tokens: maxTokens,
+    system,
+    messages: [{ role: 'user', content: prompt }],
+  };
+  if (adaptive) req.thinking = { type: 'adaptive' };
+  if (effort) req.output_config = { effort: config.llm.effort };
+  return firstText(await client.messages.create(req)).trim();
+}
+
 function firstText(res) {
   const block = res.content.find((b) => b.type === 'text');
   if (!block) throw new Error('Modeldan matn bloki kelmadi');
