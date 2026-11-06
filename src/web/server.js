@@ -74,15 +74,20 @@ function holat() {
 
   for (const p of listProjects()) {
     qoy(p.grp, {
+      kalit: p.key,
       nom: p.name,
       kind: p.kind,
       target: p.target,
+      // HTTP loyihasi bo'lsa ochib ko'rish uchun havola
+      havola: p.kind === 'http' && /^https?:\/\//i.test(p.target) ? p.target : null,
       status: p.enabled ? p.status : 'ochiq',
       ms: p.ms,
       http: p.http,
       note: p.note,
       at: p.last_check,
-      tarix: recentChecks(p.key, 24).map((c) => c.status),
+      oxirgiOk: p.last_ok,
+      yiqilish: p.fail_streak,
+      tarix: recentChecks(p.key, 24).map((c) => ({ s: c.status, ms: c.ms, at: c.at })),
     });
   }
   return { yangilandi: Date.now(), xonalar: [...xonalar.values()] };

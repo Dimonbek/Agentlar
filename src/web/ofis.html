@@ -4,17 +4,11 @@
 
 <style>
 :root {
-  --side:    #171b3a;
-  --side-2:  #1f2450;
-  --side-fg: #9aa2cc;
-  --bg:      #f3f1fb;
-  --card:    #ffffff;
-  --ink:     #161a36;
-  --ink-2:   #4b5277;
-  --ink-3:   #8d93b4;
-  --line:    #e6e6f3;
-  --blue:    #6c4ef0;
-  --blue-s:  #ece8fe;
+  --side:   #171b3a; --side-fg: #9aa2cc;
+  --bg:     #f3f1fb; --card: #ffffff;
+  --ink:    #161a36; --ink-2: #4b5277; --ink-3: #8d93b4;
+  --line:   #e6e6f3;
+  --blue:   #6c4ef0; --blue-s: #ece8fe;
   --ok:   #16a34a; --ok-s:   #dcfce7;
   --warn: #ea8a07; --warn-s: #fef3c7;
   --err:  #e11d48; --err-s:  #ffe4e6;
@@ -39,369 +33,502 @@ body { background: var(--bg); color: var(--ink); font-family: var(--f); font-siz
 .logo-t { font-weight: 800; font-size: 14px; color: #fff; line-height: 1.15; letter-spacing: -.02em }
 .logo-t span { display: block; font-size: 9.5px; font-weight: 600; color: var(--side-fg); letter-spacing: .14em }
 .nav { display: flex; flex-direction: column; gap: 3px }
-.nav a { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px;
-         color: var(--side-fg); text-decoration: none; font-size: 13px; font-weight: 600;
-         transition: background .15s, color .15s }
-.nav a:hover { background: rgba(255,255,255,.06); color: #fff }
-.nav a.on { background: var(--blue); color: #fff; box-shadow: 0 6px 16px rgba(108,78,240,.4) }
-.nav a.soon { opacity: .45; cursor: default }
-.nav a.soon:hover { background: none; color: var(--side-fg) }
-.side-b { margin-top: auto; display: flex; flex-direction: column; gap: 12px }
+.nav button { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px;
+  color: var(--side-fg); background: none; border: none; width: 100%; text-align: left;
+  font: 600 13px var(--f); cursor: pointer; transition: background .15s, color .15s }
+.nav button:hover:not(.soon) { background: rgba(255,255,255,.06); color: #fff }
+.nav button.on { background: var(--blue); color: #fff; box-shadow: 0 6px 16px rgba(108,78,240,.4) }
+.nav button.soon { opacity: .4; cursor: default }
+.side-b { margin-top: auto }
 .who { display: flex; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 12px;
        background: rgba(255,255,255,.05) }
-.who img, .who .ava { width: 32px; height: 32px; border-radius: 10px; object-fit: cover; flex-shrink: 0 }
-.who .ava { background: var(--blue); display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px }
+.who .ava { width: 32px; height: 32px; border-radius: 10px; background: var(--blue);
+            display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px }
 .who-n { display: block; font-size: 12.5px; font-weight: 700; color: #fff; line-height: 1.2 }
 .who-r { display: block; font-size: 10.5px; color: var(--side-fg) }
 
-/* ── Asosiy qism ── */
-.main { padding: 26px 30px 36px; min-width: 0 }
+/* ── Asosiy ── */
+.main { padding: 26px 30px 40px; min-width: 0 }
 .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
        flex-wrap: wrap; margin-bottom: 24px }
 .eyebrow { font-size: 11.5px; font-weight: 800; color: var(--blue); letter-spacing: .14em }
-h1 { font-size: 36px; font-weight: 800; letter-spacing: -.035em; margin-top: 4px; line-height: 1.1 }
-h1::after { content: ""; display: block; width: 46px; height: 4px; border-radius: 2px;
-            background: var(--blue); margin-top: 8px }
+h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; margin-top: 4px; line-height: 1.1 }
+.rule { width: 46px; height: 4px; border-radius: 2px; background: var(--blue); margin-top: 8px }
 .lead { color: var(--ink-2); font-size: 13.5px; margin-top: 12px; font-weight: 500 }
 .tools { display: flex; align-items: center; gap: 10px }
 .search { display: flex; align-items: center; gap: 9px; background: var(--card); border: 1px solid var(--line);
-          border-radius: 999px; padding: 9px 16px; width: 260px; box-shadow: var(--sh) }
-.search input { border: none; outline: none; font: 500 13px var(--f); width: 100%; color: var(--ink);
-                background: none }
-.search input::placeholder { color: var(--ink-3) }
+          border-radius: 999px; padding: 9px 16px; width: 250px; box-shadow: var(--sh) }
+.search input { border: none; outline: none; font: 500 13px var(--f); width: 100%; background: none; color: var(--ink) }
 .icon-b { width: 40px; height: 40px; border-radius: 999px; border: 1px solid var(--line);
           background: var(--card); display: grid; place-items: center; cursor: pointer;
-          color: var(--ink-2); box-shadow: var(--sh); position: relative }
+          color: var(--ink-2); box-shadow: var(--sh); position: relative; flex-shrink: 0 }
 .icon-b:hover { color: var(--blue) }
 .icon-b .nuqta { position: absolute; top: 9px; right: 10px; width: 8px; height: 8px;
                  border-radius: 50%; background: var(--err); border: 2px solid var(--card) }
 
+.orqaga { display: inline-flex; align-items: center; gap: 7px; background: var(--card);
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 15px; font: 700 12.5px var(--f);
+  color: var(--ink-2); cursor: pointer; box-shadow: var(--sh); margin-bottom: 18px }
+.orqaga:hover { color: var(--blue) }
+
 /* ── Kartochkalar ── */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 20px }
 .c { position: relative; border-radius: 20px; padding: 20px; overflow: hidden; cursor: pointer;
-     background: var(--card); box-shadow: var(--sh); min-height: 268px;
+     background: var(--card); box-shadow: var(--sh); min-height: 262px;
      display: flex; flex-direction: column; transition: transform .18s, box-shadow .18s }
 .c:hover { transform: translateY(-3px); box-shadow: var(--sh-l) }
 .c:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px }
-.c-fon { position: absolute; inset: 0; opacity: .5 }
+.c-fon { position: absolute; inset: 0; opacity: .55 }
 .c-rasm { position: absolute; right: -3%; bottom: 0; height: 96%; width: 44%; object-fit: cover;
-          object-position: top center;
-          -webkit-mask-image: linear-gradient(to right, transparent 2%, #000 42%);
-          mask-image: linear-gradient(to right, transparent 2%, #000 42%) }
-/* Fon va surat mutlaq joylashadi; qolgan bolalar ular ustida turadi.
-   :not(...) shart — aks holda bu qoida ularning absolute ini bekor qilardi. */
+  object-position: top center;
+  -webkit-mask-image: linear-gradient(to right, transparent 2%, #000 42%);
+  mask-image: linear-gradient(to right, transparent 2%, #000 42%) }
+/* Fon va surat mutlaq turadi; qolganlari ular ustida */
 .c > *:not(.c-fon):not(.c-rasm) { position: relative }
-.c-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px }
+.c-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px }
 .c-ico { width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center;
          color: #fff; flex-shrink: 0; box-shadow: 0 5px 14px rgba(22,26,54,.18) }
 .c-n { display: block; font-size: 16px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15 }
 .c-s { display: block; font-size: 11.5px; color: var(--ink-2); font-weight: 600; margin-top: 1px }
 .c-cnt { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
-         background: rgba(255,255,255,.72); border: 1px solid rgba(22,26,54,.07);
-         border-radius: 999px; padding: 4px 11px; font-size: 11.5px; font-weight: 700; color: var(--ink-2) }
+  background: rgba(255,255,255,.75); border: 1px solid rgba(22,26,54,.07);
+  border-radius: 999px; padding: 4px 11px; font-size: 11.5px; font-weight: 700; color: var(--ink-2) }
 .c-list { display: flex; flex-direction: column; gap: 6px; max-width: 62%; margin-bottom: 14px }
-.c-li { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink) }
+.c-li { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600 }
 .c-li i { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; display: block }
 .c-li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 .c-yana { font-size: 11.5px; color: var(--ink-3); font-weight: 600; padding-left: 15px }
 .c-bot { margin-top: auto; display: flex; align-items: center; gap: 10px }
 .stack { display: flex }
 .stack > * { width: 30px; height: 30px; border-radius: 50%; border: 2.5px solid var(--card);
-             margin-left: -9px; object-fit: cover; object-position: center 20%; cursor: pointer;
-             transition: transform .15s }
+  margin-left: -9px; object-fit: cover; object-position: center 20%; cursor: pointer; transition: transform .15s }
 .stack > *:first-child { margin-left: 0 }
 .stack > *:hover { transform: translateY(-3px) }
 .stack .plus { background: var(--blue-s); color: var(--blue); display: grid; place-items: center;
-               font-size: 10.5px; font-weight: 800; cursor: default }
+               font-size: 11px; font-weight: 800 }
 .c-btn { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; background: #1c2040;
-         color: #fff; border: none; border-radius: 999px; padding: 9px 16px; font: 700 12px var(--f);
-         cursor: pointer; white-space: nowrap }
+  color: #fff; border: none; border-radius: 999px; padding: 9px 16px; font: 700 12px var(--f); cursor: pointer }
 .c-btn:hover { background: var(--blue) }
 
-/* ── Oyna (bo'lim va agent) ── */
-.fon { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px;
-       background: rgba(18,21,48,.5); backdrop-filter: blur(6px);
-       opacity: 0; pointer-events: none; transition: opacity .18s }
-.fon.show { opacity: 1; pointer-events: auto }
-.oyna { position: relative; background: var(--card); border-radius: 22px; box-shadow: var(--sh-l);
-        width: min(560px, 100%); max-height: 86vh; overflow: auto;
-        transform: scale(.95); transition: transform .18s }
-.fon.show .oyna { transform: scale(1) }
-.x { position: absolute; top: 15px; right: 16px; width: 32px; height: 32px; border: none; z-index: 2;
-     border-radius: 50%; background: rgba(255,255,255,.85); color: var(--ink-2); font: 700 16px var(--f);
-     cursor: pointer; line-height: 1 }
-.x:hover { background: var(--blue); color: #fff }
+/* ── Loyiha / agent sahifasi ── */
+.hero { position: relative; border-radius: 22px; overflow: hidden; background: var(--card);
+        box-shadow: var(--sh); padding: 26px 28px; display: flex; gap: 24px; align-items: center;
+        flex-wrap: wrap; margin-bottom: 20px }
+.hero-fon { position: absolute; inset: 0 }
+.hero > *:not(.hero-fon) { position: relative }
+.hero-rasm { width: 132px; height: 132px; border-radius: 20px; object-fit: cover;
+  object-position: center 18%; flex-shrink: 0; box-shadow: var(--sh) }
+.hero-i { min-width: 0; flex: 1 }
+.hero-n { font-size: 27px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1 }
+.hero-s { font-size: 13px; color: var(--ink-2); font-weight: 600; margin-top: 4px }
+.hero-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 13px }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700;
+        padding: 5px 13px; border-radius: 999px }
+.link { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700;
+  color: var(--blue); text-decoration: none; background: var(--blue-s); padding: 6px 14px; border-radius: 999px }
+.link:hover { text-decoration: underline }
 
-/* agent oynasi — 1:1 surat, yonida ma'lumot */
-.a-top { display: flex; gap: 20px; padding: 24px; align-items: center }
-.a-rasm { width: 148px; height: 148px; border-radius: 18px; object-fit: cover; object-position: center 18%;
-          flex-shrink: 0; box-shadow: var(--sh) }
-.a-info { min-width: 0 }
-.a-n { font-size: 26px; font-weight: 800; letter-spacing: -.03em }
-.a-r { font-size: 13.5px; color: var(--ink-2); font-weight: 600; margin-top: 3px }
-.a-b { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
-       padding: 4px 12px; border-radius: 999px; margin-top: 12px }
-.a-v { font-size: 13px; color: var(--ink-2); margin-top: 12px; line-height: 1.5 }
-.a-v b { color: var(--ink) }
+.kolon { display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start }
+@media (max-width: 980px) { .kolon { grid-template-columns: 1fr } }
+.panel { background: var(--card); border-radius: 20px; box-shadow: var(--sh); overflow: hidden;
+         margin-bottom: 20px }
+.panel-h { display: flex; align-items: center; gap: 9px; padding: 16px 20px 13px; font-weight: 800;
+           font-size: 14px; border-bottom: 1px solid var(--line) }
+.panel-b { padding: 18px 20px }
 
-/* bo'lim oynasi */
-.o-head { display: flex; align-items: center; gap: 13px; padding: 22px 24px 16px }
-.o-ico { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; color: #fff }
-.o-n { font-size: 19px; font-weight: 800; letter-spacing: -.02em }
-.o-s { font-size: 12px; color: var(--ink-3); font-weight: 600 }
-.r { display: flex; align-items: center; gap: 12px; padding: 12px 24px; border-top: 1px solid var(--line) }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 12px }
+.stat { background: #f8f8fd; border-radius: 14px; padding: 13px 15px }
+.stat-k { font-size: 10.5px; font-weight: 700; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase }
+.stat-v { font-size: 20px; font-weight: 800; margin-top: 3px; letter-spacing: -.02em }
+.stat-v small { font-size: 12px; font-weight: 700; color: var(--ink-3) }
+
+.bar { display: flex; gap: 3px; align-items: flex-end; height: 44px; margin-top: 6px }
+.bar i { flex: 1; min-width: 3px; border-radius: 2px; display: block; opacity: .92 }
+.bar-l { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--ink-3);
+         font-weight: 600; margin-top: 7px }
+
+.r { display: flex; align-items: center; gap: 12px; padding: 13px 20px; border-top: 1px solid var(--line);
+     cursor: pointer; transition: background .13s }
+.r:hover { background: #faf9ff }
 .r i { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0 }
 .r-n { font-weight: 700; font-size: 13px }
 .r-t { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); overflow-wrap: anywhere }
 .r-m { margin-left: auto; text-align: right; flex-shrink: 0 }
-.r-b { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap }
-.r-ms { font-family: var(--mono); font-size: 10px; color: var(--ink-3); margin-top: 3px }
-.r-note { padding: 0 24px 12px 45px; font-size: 11.5px; color: var(--err); font-weight: 600 }
+.r-ms { display: block; font-family: var(--mono); font-size: 10px; color: var(--ink-3); margin-top: 4px }
+
+.mini { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border-radius: 14px;
+        background: #f8f8fd; cursor: pointer; margin-bottom: 9px }
+.mini:hover { background: var(--blue-s) }
+.mini-rasm { width: 42px; height: 42px; border-radius: 12px; object-fit: cover;
+             object-position: center 18%; flex-shrink: 0 }
+.mini-n { display: block; font-weight: 700; font-size: 13px }
+.mini-r { display: block; font-size: 11px; color: var(--ink-3); font-weight: 600 }
+
+.bosh { padding: 34px 20px; text-align: center; color: var(--ink-3); font-size: 13px; line-height: 1.7 }
+.bosh b { color: var(--ink-2) }
 
 .b-ok { background: var(--ok-s); color: var(--ok) } .b-warn { background: var(--warn-s); color: var(--warn) }
 .b-err { background: var(--err-s); color: var(--err) } .b-ochiq { background: #eef0f6; color: #727a9c }
 .d-ok { background: var(--ok) } .d-warn { background: var(--warn) }
 .d-err { background: var(--err) } .d-ochiq { background: #aeb5cd }
 
-.bosh { grid-column: 1/-1; text-align: center; padding: 50px 20px; color: var(--ink-3) }
-
 @media (max-width: 900px) {
   .app { grid-template-columns: 1fr }
-  .side { position: static; height: auto; flex-direction: row; align-items: center; gap: 14px;
+  .side { position: static; height: auto; flex-direction: row; align-items: center; gap: 10px;
           padding: 12px 16px; overflow-x: auto }
-  .side-b, .nav a span { display: none }
+  .side-b, .nav button span { display: none }
   .nav { flex-direction: row }
-  h1 { font-size: 28px }
+  h1 { font-size: 26px }
   .main { padding: 20px 16px 30px }
-  .search { width: 100%; min-width: 180px }
-  .c-list, .c-rasm { max-width: 100%; }
-  .c-rasm { opacity: .5 }
+  .search { width: 100%; min-width: 170px }
+  .c-rasm { opacity: .45 }
 }
 </style>
 
 <div class="app">
   <aside class="side">
     <div class="logo">
-      <span class="logo-m">
-        <svg width="20" height="20" viewBox="0 0 18 18" aria-hidden="true">
-          <path d="M3 14L7 9L3 4H7L9 7L11 4H15L11 9L15 14H11L9 11L7 14H3Z" fill="white"/>
-        </svg>
-      </span>
+      <span class="logo-m"><svg width="20" height="20" viewBox="0 0 18 18" aria-hidden="true">
+        <path d="M3 14L7 9L3 4H7L9 7L11 4H15L11 9L15 14H11L9 11L7 14H3Z" fill="white"/></svg></span>
       <span class="logo-t">DIMON<span>AGENCY</span></span>
     </div>
-
     <nav class="nav">
-      <a href="#" class="on" aria-current="page">
+      <button type="button" class="on" id="nav-bosh">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
-        <span>Agentlar</span>
-      </a>
-      <a href="#" class="soon" aria-disabled="true">
+        <span>Agentlar</span></button>
+      <button type="button" class="soon" disabled>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
-        <span>Statistika</span>
-      </a>
-      <a href="#" class="soon" aria-disabled="true">
+        <span>Statistika</span></button>
+      <button type="button" class="soon" disabled>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>
-        <span>Obunalar</span>
-      </a>
-      <a href="#" class="soon" aria-disabled="true">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.9 1.17V21a2 2 0 11-4 0v-.09A1.65 1.65 0 006 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 002.6 15H2.5a2 2 0 110-4h.09A1.65 1.65 0 004.6 9"/></svg>
-        <span>Sozlamalar</span>
-      </a>
+        <span>Obunalar</span></button>
+      <button type="button" class="soon" disabled>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M4.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 0012 4.6a2 2 0 114 0 1.65 1.65 0 002.9 1.17l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0021.4 12"/></svg>
+        <span>Sozlamalar</span></button>
     </nav>
-
-    <div class="side-b">
-      <div class="who">
-        <span class="ava">D</span>
-        <span><span class="who-n">Dilmurod</span><span class="who-r">Admin</span></span>
-      </div>
-    </div>
+    <div class="side-b"><div class="who"><span class="ava">D</span>
+      <span><span class="who-n">Dilmurod</span><span class="who-r">Admin</span></span></div></div>
   </aside>
 
-  <main class="main">
-    <div class="top">
-      <div>
-        <div class="eyebrow">DIMON AGENCY</div>
-        <h1>Agentlar Binosi</h1>
-        <p class="lead" id="lead">Barcha AI agentlar bir joyda — kim nimani kuzatayotgani ko‘rinib turadi.</p>
-      </div>
-      <div class="tools">
-        <label class="search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.2-4.2"/></svg>
-          <input id="qidir" type="search" placeholder="Agent yoki bo‘lim qidirish…" aria-label="Qidirish">
-        </label>
-        <button class="icon-b" id="yangila-b" title="Yangilash" aria-label="Yangilash">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>
-          <span class="nuqta" id="nuqta" hidden></span>
-        </button>
-      </div>
-    </div>
-
-    <div class="grid" id="grid"></div>
-  </main>
+  <main class="main" id="main"></main>
 </div>
 
-<div class="fon" id="fon" role="dialog" aria-modal="true"><div class="oyna" id="oyna"></div></div>
-
 <script>
-let BINO = [];
-let AVATAR = {};
+let BINO = [], AVATAR = {};
 
-/* Agentlar va ular kuzatadigan bo'limlar. Rita hamma loyihani ping
-   qilgani uchun har kartochkada ko'rinadi. */
-const QIZLAR = ['Debra', 'Rita', 'Layla', 'Sara'];
-const ISH = { agentlar: ['Debra', 'Rita', 'Layla', 'Sara'], _boshqa: ['Rita'] };
-const agentlari = (id) => ISH[id] ?? ISH._boshqa;
-/** Kartochkaning katta surati — o'sha bo'limga mas'ul birinchi agent. */
-const yuz = (id) => agentlari(id).find((n) => AVATAR[n.toLowerCase()]) ?? null;
-
-const RANG = {
-  agentlar: '#4f7cf7', kgf: '#1fb57a', subtitr: '#8b5cf6',
-  tur: '#14b8c4', crm: '#f59e0b', infra: '#ec4899',
+/* Kim qayerda ishlaydi. Rita hamma loyihani ping qiladi; Debra KGF va
+   CRM ni nazorat qiladi; Layla INFRA to'lovlarini oladi; Sara agentlar
+   xatolarini kuzatadi. `yuz` — kartochkadagi katta surat. */
+const ISH = {
+  agentlar: { kim: ['Sara', 'Debra', 'Rita', 'Layla'], yuz: 'Sara'  },
+  kgf:      { kim: ['Debra', 'Rita'],                  yuz: 'Debra' },
+  subtitr:  { kim: ['Rita'],                           yuz: 'Rita'  },
+  tur:      { kim: ['Rita', 'Debra'],                  yuz: 'Rita'  },
+  crm:      { kim: ['Debra', 'Rita'],                  yuz: 'Debra' },
+  infra:    { kim: ['Layla', 'Rita'],                  yuz: 'Layla' },
 };
+const ish = (id) => ISH[id] ?? { kim: ['Rita'], yuz: 'Rita' };
+const VAZIFA = {
+  Debra: 'boshliq — kunlik hisobot',
+  Rita:  'loyihalar nazorati',
+  Layla: 'obunalar va to’lovlar',
+  Sara:  'xatoliklar kuzatuvi',
+};
+
+const RANG = { agentlar:'#4f7cf7', kgf:'#1fb57a', subtitr:'#8b5cf6',
+               tur:'#14b8c4', crm:'#f59e0b', infra:'#ec4899' };
 const ICO = {
-  agentlar: '<path d="M3 11a9 9 0 0118 0"/><rect x="2" y="11" width="5" height="8" rx="2"/><rect x="17" y="11" width="5" height="8" rx="2"/><path d="M21 19a3 3 0 01-3 3h-3"/>',
-  kgf: '<path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/>',
-  subtitr: '<path d="M12 2.5l9.5 4.6L12 11.7 2.5 7.1 12 2.5z"/><path d="M2.5 16.9L12 21.5l9.5-4.6"/><path d="M2.5 12L12 16.6 21.5 12"/>',
-  tur: '<circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8a16 16 0 010 18.4 16 16 0 010-18.4z"/>',
-  crm: '<rect x="2" y="7" width="20" height="14" rx="3"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/>',
-  infra: '<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  agentlar:'<path d="M3 11a9 9 0 0118 0"/><rect x="2" y="11" width="5" height="8" rx="2"/><rect x="17" y="11" width="5" height="8" rx="2"/><path d="M21 19a3 3 0 01-3 3h-3"/>',
+  kgf:'<path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/>',
+  subtitr:'<path d="M12 2.5l9.5 4.6L12 11.7 2.5 7.1 12 2.5z"/><path d="M2.5 16.9L12 21.5l9.5-4.6"/><path d="M2.5 12L12 16.6 21.5 12"/>',
+  tur:'<circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8a16 16 0 010 18.4 16 16 0 010-18.4z"/>',
+  crm:'<rect x="2" y="7" width="20" height="14" rx="3"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/>',
+  infra:'<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
 };
 const KIND = { http:'sayt', docker:'konteyner', systemd:'servis', agent:'agent' };
-const SNOM = { ok:'ishlayapti', warn:'ogohlantirish', err:'ishlamayapti', ochiq:'o‘chirilgan' };
+const SNOM = { ok:'ishlayapti', warn:'ogohlantirish', err:'ishlamayapti', ochiq:'o’chirilgan' };
 const holatOf = (x) => x.items.some(i => i.status === 'err') ? 'err'
   : x.items.some(i => i.status === 'warn') ? 'warn' : 'ok';
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
-const svg = (d, c = 'currentColor') =>
-  `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.9"
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+const svg = (d, c = 'currentColor', n = 22) =>
+  `<svg width="${n}" height="${n}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="1.9"
     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
-
-const grid = document.getElementById('grid');
-const fon = document.getElementById('fon');
-const oyna = document.getElementById('oyna');
-
-/* ═════════ KARTOCHKALAR ═════════ */
-function chiz(filtr = '') {
-  const f = filtr.trim().toLowerCase();
-  const kor = BINO.filter((x) => !f ||
-    x.nom.toLowerCase().includes(f) ||
-    x.items.some((i) => i.nom.toLowerCase().includes(f)));
-
-  if (!kor.length) {
-    grid.innerHTML = '<div class="bosh">Hech narsa topilmadi</div>';
-    return;
-  }
-
-  grid.innerHTML = kor.map((x) => {
-    const rang = RANG[x.id] ?? x.rang ?? '#6c4ef0';
-    const n = yuz(x.id);
-    const rasm = n ? `<img class="c-rasm" src="${AVATAR[n.toLowerCase()]}" alt="" aria-hidden="true">` : '';
-    const royxat = x.items.slice(0, 6).map((i) =>
-      `<div class="c-li"><i class="d-${i.status}"></i><span>${esc(i.nom)}</span></div>`).join('');
-    const yana = x.items.length > 6 ? `<div class="c-yana">+${x.items.length - 6} ta yana</div>` : '';
-    const stack = agentlari(x.id).map((nom) => {
-      const a = AVATAR[nom.toLowerCase()];
-      return a ? `<img src="${a}" alt="${nom}" title="${nom}" data-agent="${nom}">`
-               : `<span class="plus" title="${nom}">${nom[0]}</span>`;
-    }).join('');
-    return `
-      <article class="c" tabindex="0" role="button" data-xona="${x.id}"
-               aria-label="${esc(x.nom)} — ${x.items.length} ta">
-        <span class="c-fon" style="background:linear-gradient(135deg,${rang}22,${rang}08 60%,transparent)"></span>
-        ${rasm}
-        <div class="c-top">
-          <span class="c-ico" style="background:${rang}">${svg(ICO[x.id] ?? ICO.infra, '#fff')}</span>
-          <span><span class="c-n">${esc(x.nom)}</span><span class="c-s">${esc(x.izoh || '')}</span></span>
-          <span class="c-cnt">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.4"/><path d="M15.5 20v-1.5a4 4 0 00-4-4h-5a4 4 0 00-4 4V20"/><path d="M21 20v-1.5a4 4 0 00-3-3.85"/></svg>
-            ${x.items.length} ta</span>
-        </div>
-        <div class="c-list">${royxat}${yana}</div>
-        <div class="c-bot">
-          <span class="stack">${stack}</span>
-          <button class="c-btn" type="button" data-xona="${x.id}">Barchasini ko‘rish
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
-          </button>
-        </div>
-      </article>`;
-  }).join('');
-}
-
-grid.addEventListener('click', (e) => {
-  const ava = e.target.closest('[data-agent]');
-  if (ava) { e.stopPropagation(); return agentOyna(ava.dataset.agent); }
-  const k = e.target.closest('[data-xona]');
-  if (k) xonaOyna(k.dataset.xona);
-});
-grid.addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter' && e.key !== ' ') return;
-  const k = e.target.closest('.c');
-  if (k) { e.preventDefault(); xonaOyna(k.dataset.xona); }
-});
-
-/* ═════════ OYNALAR ═════════ */
-const yop = () => fon.classList.remove('show');
-const och = (html) => {
-  oyna.innerHTML = '<button class="x" type="button" aria-label="Yopish">&times;</button>' + html;
-  oyna.querySelector('.x').addEventListener('click', yop);
-  fon.classList.add('show');
-  oyna.querySelector('.x').focus();
+const soat = (ts) => ts ? new Date(ts).toLocaleTimeString('uz-UZ', { hour:'2-digit', minute:'2-digit' }) : '—';
+const muddat = (ms) => {
+  if (!Number.isFinite(ms) || ms < 0) return '—';
+  const m = Math.floor(ms / 60000);
+  if (m < 60) return m + ' daqiqa';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + ' soat';
+  return Math.floor(h / 24) + ' kun';
 };
-fon.addEventListener('click', (e) => { if (e.target === fon) yop(); });
-addEventListener('keydown', (e) => { if (e.key === 'Escape') yop(); });
-
-/** Agent: 1:1 surat chap tomonda, yonida ma'lumoti. */
-function agentOyna(nom) {
-  const it = BINO.find((x) => x.id === 'agentlar')?.items.find((i) => i.nom === nom);
+const rasmYoki = (nom, klass) => {
   const a = AVATAR[nom.toLowerCase()];
-  const rasm = a
-    ? `<img class="a-rasm" src="${a}" alt="${esc(nom)}">`
-    : `<span class="a-rasm" style="background:var(--blue-s);display:grid;place-items:center;
-         font:800 54px var(--f);color:var(--blue)">${esc(nom[0])}</span>`;
-  const h = it?.status ?? 'ochiq';
-  och(`<div class="a-top">${rasm}
-    <div class="a-info">
-      <div class="a-n">${esc(nom)}</div>
-      <div class="a-r">${esc(it?.target ?? 'AI agent')}</div>
-      <span class="a-b b-${h}">${SNOM[h] ?? h}</span>
-      <div class="a-v">${izoh(it)}</div>
-    </div></div>`);
-}
-function izoh(it) {
-  if (!it) return 'Ma’lumot yo‘q.';
-  if (it.note) return `Hali ishga tushmagan — <b>${esc(it.note)}</b>.`;
-  if (it.at) return 'Oxirgi ish: <b>' +
-    new Date(it.at).toLocaleTimeString('uz-UZ', { hour:'2-digit', minute:'2-digit' }) + '</b>';
-  return 'Ishlab turibdi.';
+  return a ? `<img class="${klass}" src="${a}" alt="${esc(nom)}">`
+           : `<span class="${klass}" style="background:var(--blue);color:#fff;display:grid;
+                place-items:center;font-weight:800;font-size:1.6em">${esc(nom[0])}</span>`;
+};
+const loyihaTop = (kalit) => {
+  for (const x of BINO) {
+    const i = x.items.find((p) => p.kalit === kalit);
+    if (i) return { xona: x, it: i };
+  }
+  return null;
+};
+
+/* ═════════ KO'RINISHLAR ═════════ */
+const main = document.getElementById('main');
+let kor = { turi: 'bosh' };
+let qidiruv = '';
+
+const ORQAGA = (ket, nom) =>
+  `<button class="orqaga" data-ket="${ket}">${svg('<path d="M19 12H6M12 18l-6-6 6-6"/>', 'currentColor', 14)} ${esc(nom)}</button>`;
+
+/* ── Bosh sahifa ── */
+function boshKor() {
+  const f = qidiruv.trim().toLowerCase();
+  const kir = BINO.filter((x) => !f || x.nom.toLowerCase().includes(f) ||
+    x.items.some((i) => i.nom.toLowerCase().includes(f)));
+  const yomon = BINO.flatMap((x) => x.items).filter((i) => i.status === 'err').length;
+
+  main.innerHTML = `
+    <div class="top"><div>
+      <div class="eyebrow">DIMON AGENCY</div>
+      <h1>Agentlar Binosi</h1><div class="rule"></div>
+      <p class="lead">${yomon
+        ? `<b style="color:var(--err)">${yomon} ta loyihada muammo bor.</b> Qizil belgilarga qarang.`
+        : 'Hammasi joyida — barcha loyihalar ishlab turibdi.'}</p></div>
+      <div class="tools">
+        <label class="search">
+          ${svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.2-4.2"/>', 'var(--ink-3)', 15)}
+          <input id="qidir" type="search" placeholder="Agent yoki bo‘lim qidirish…" value="${esc(qidiruv)}" aria-label="Qidirish">
+        </label>
+        <button class="icon-b" id="yangila-b" title="Yangilash" aria-label="Yangilash">
+          ${svg('<path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 3v5h-5"/>', 'currentColor', 17)}
+          ${yomon ? '<span class="nuqta"></span>' : ''}</button>
+      </div></div>
+    ${kir.length ? `<div class="grid">${kir.map(karta).join('')}</div>`
+                 : '<div class="bosh">Hech narsa topilmadi</div>'}`;
 }
 
-/** Bo'lim: ichidagi hamma loyiha to'liq ma'lumoti bilan. */
-function xonaOyna(id) {
-  const x = BINO.find((r) => r.id === id);
-  if (!x) return;
+function karta(x) {
   const rang = RANG[x.id] ?? '#6c4ef0';
-  const qatorlar = x.items.map((i) => `
-    <div class="r">
-      <i class="d-${i.status}"></i>
-      <span style="min-width:0">
-        <span class="r-n">${esc(i.nom)}</span><br>
-        <span class="r-t">${esc(i.target)}</span>
-      </span>
-      <span class="r-m">
-        <span class="r-b b-${i.status}">${SNOM[i.status] ?? i.status}</span>
-        <span class="r-ms">${KIND[i.kind] ?? i.kind}${i.http ? ' · ' + i.http : ''}${i.ms != null ? ' · ' + i.ms + 'ms' : ''}</span>
-      </span>
-    </div>${i.note ? `<div class="r-note">${esc(i.note)}</div>` : ''}`).join('');
-  och(`<div class="o-head">
-      <span class="o-ico" style="background:${rang}">${svg(ICO[x.id] ?? ICO.infra, '#fff')}</span>
-      <span><div class="o-n">${esc(x.nom)}</div>
-        <div class="o-s">${esc(x.izoh || '')} · ${x.items.length} ta</div></span>
-    </div>${qatorlar}`);
+  const { kim, yuz } = ish(x.id);
+  const a = AVATAR[yuz.toLowerCase()];
+  return `<article class="c" tabindex="0" role="button" data-xona="${x.id}"
+      aria-label="${esc(x.nom)}, ${x.items.length} ta">
+    <span class="c-fon" style="background:linear-gradient(135deg,${rang}22,${rang}08 60%,transparent)"></span>
+    ${a ? `<img class="c-rasm" src="${a}" alt="" aria-hidden="true">` : ''}
+    <div class="c-top">
+      <span class="c-ico" style="background:${rang}">${svg(ICO[x.id] ?? ICO.infra, '#fff')}</span>
+      <span><span class="c-n">${esc(x.nom)}</span><span class="c-s">${esc(x.izoh)}</span></span>
+      <span class="c-cnt">${svg('<circle cx="9" cy="8" r="3.4"/><path d="M15.5 20v-1.5a4 4 0 00-4-4h-5a4 4 0 00-4 4V20"/>', 'currentColor', 13)} ${x.items.length} ta</span>
+    </div>
+    <div class="c-list">${x.items.slice(0, 6).map((i) =>
+      `<div class="c-li"><i class="d-${i.status}"></i><span>${esc(i.nom)}</span></div>`).join('')}
+      ${x.items.length > 6 ? `<div class="c-yana">+${x.items.length - 6} ta yana</div>` : ''}</div>
+    <div class="c-bot">
+      <span class="stack">${kim.map((n) => {
+        const av = AVATAR[n.toLowerCase()];
+        return av ? `<img src="${av}" alt="${n}" title="${n}" data-agent="${n}">`
+                  : `<span class="plus" title="${n}" data-agent="${n}">${n[0]}</span>`;
+      }).join('')}</span>
+      <button class="c-btn" type="button" data-xona="${x.id}">Barchasini ko‘rish
+        ${svg('<path d="M5 12h13M13 6l6 6-6 6"/>', 'currentColor', 13)}</button>
+    </div></article>`;
 }
+
+/* ── Bo'lim ── */
+function xonaKor(id) {
+  const x = BINO.find((r) => r.id === id);
+  if (!x) return ketBosh();
+  const rang = RANG[x.id] ?? '#6c4ef0';
+  const { kim, yuz } = ish(x.id);
+  const h = holatOf(x);
+
+  main.innerHTML = ORQAGA('bosh', 'Agentlar Binosi') + `
+    <div class="hero">
+      <span class="hero-fon" style="background:linear-gradient(120deg,${rang}1c,transparent 65%)"></span>
+      ${rasmYoki(yuz, 'hero-rasm')}
+      <div class="hero-i">
+        <div class="hero-n">${esc(x.nom)}</div>
+        <div class="hero-s">${esc(x.izoh)} · ${x.items.length} ta loyiha</div>
+        <div class="hero-row">
+          <span class="pill b-${h}">${SNOM[h]}</span>
+          <span class="pill" style="background:${rang}1c;color:${rang}">Mas’ul: ${esc(kim.join(', '))}</span>
+        </div></div></div>
+    <div class="panel">
+      <div class="panel-h">${svg(ICO[x.id] ?? ICO.infra, rang, 17)} Loyihalar — birini bosing</div>
+      ${x.items.map((i) => `
+        <div class="r" ${i.kalit ? `data-loyiha="${esc(i.kalit)}" tabindex="0" role="button"` : ''}>
+          <i class="d-${i.status}"></i>
+          <span style="min-width:0"><span class="r-n">${esc(i.nom)}</span><br>
+            <span class="r-t">${esc(i.target)}</span></span>
+          <span class="r-m"><span class="pill b-${i.status}">${SNOM[i.status] ?? i.status}</span>
+            <span class="r-ms">${KIND[i.kind] ?? i.kind}${i.http ? ' · ' + i.http : ''}${i.ms != null ? ' · ' + i.ms + 'ms' : ''}</span>
+          </span></div>`).join('')}
+    </div>`;
+}
+
+/* ── Loyiha: to'liq sahifa ── */
+function loyihaKor(kalit) {
+  const t = loyihaTop(kalit);
+  if (!t) return ketBosh();
+  const { xona, it } = t;
+  const rang = RANG[xona.id] ?? '#6c4ef0';
+  const tarix = it.tarix ?? [];
+  const foiz = tarix.length
+    ? Math.round((tarix.filter((c) => c.s !== 'err').length / tarix.length) * 100) : null;
+  const RANG2 = { ok:'#16a34a', warn:'#ea8a07', err:'#e11d48', ochiq:'#aeb5cd' };
+
+  main.innerHTML = ORQAGA('xona:' + xona.id, xona.nom) + `
+    <div class="hero">
+      <span class="hero-fon" style="background:linear-gradient(120deg,${rang}1c,transparent 65%)"></span>
+      <span class="hero-rasm" style="background:${rang};display:grid;place-items:center">
+        ${svg(ICO[xona.id] ?? ICO.infra, '#fff', 54)}</span>
+      <div class="hero-i">
+        <div class="hero-n">${esc(it.nom)}</div>
+        <div class="hero-s">${KIND[it.kind] ?? it.kind} · ${esc(xona.nom)} bo‘limi</div>
+        <div class="hero-row">
+          <span class="pill b-${it.status}">${SNOM[it.status] ?? it.status}</span>
+          ${it.havola
+            ? `<a class="link" href="${esc(it.havola)}" target="_blank" rel="noopener">
+                 ${svg('<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/>', 'currentColor', 13)}
+                 Saytni ochish</a>`
+            : `<span class="pill b-ochiq" style="font-family:var(--mono);font-size:10.5px">${esc(it.target)}</span>`}
+        </div></div></div>
+
+    <div class="kolon">
+      <div>
+        <div class="panel">
+          <div class="panel-h">${svg('<path d="M2.5 12h4l2.5-7 5 14 2.5-7h5"/>', rang, 17)} Qanday ketyapti</div>
+          <div class="panel-b">
+            <div class="stat-grid">
+              <div class="stat"><div class="stat-k">Javob vaqti</div>
+                <div class="stat-v">${it.ms ?? '—'}<small> ms</small></div></div>
+              <div class="stat"><div class="stat-k">Javob kodi</div>
+                <div class="stat-v">${it.http ?? '—'}</div></div>
+              <div class="stat"><div class="stat-k">Tekshirildi</div>
+                <div class="stat-v" style="font-size:17px">${soat(it.at)}</div></div>
+              <div class="stat"><div class="stat-k">Ishonchlilik</div>
+                <div class="stat-v">${foiz ?? '—'}<small>%</small></div></div>
+            </div>
+            ${tarix.length ? `<div style="margin-top:18px">
+              <div class="stat-k">Oxirgi ${tarix.length} ta tekshiruv</div>
+              <div class="bar">${tarix.map((c) => {
+                const b = c.s === 'err' ? 38 : Math.max(14, Math.min(42, (c.ms ?? 200) / 24));
+                return `<i style="height:${b}px;background:${RANG2[c.s] ?? '#ccc'}"
+                  title="${soat(c.at)} · ${SNOM[c.s] ?? c.s}${c.ms != null ? ' · ' + c.ms + 'ms' : ''}"></i>`;
+              }).join('')}</div>
+              <div class="bar-l"><span>${soat(tarix[0].at)}</span><span>${soat(tarix.at(-1).at)}</span></div>
+            </div>` : '<div class="bosh">Tarix hali yig‘ilmagan.</div>'}
+            ${it.note ? `<div style="margin-top:16px"><span class="pill b-err">${esc(it.note)}</span></div>` : ''}
+            ${it.status === 'err' && it.oxirgiOk
+              ? `<div style="margin-top:12px;font-size:12.5px;color:var(--ink-2)">
+                   Oxirgi marta ishlagan: <b>${muddat(Date.now() - it.oxirgiOk)}</b> oldin</div>` : ''}
+          </div></div>
+
+        <div class="panel">
+          <div class="panel-h">${svg('<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/>', rang, 17)} To‘lovlar</div>
+          <div class="bosh">Obuna va to‘lov eslatmalari <b>Layla</b> ishga tushgach shu yerda chiqadi.<br>
+            Hozircha bu loyiha uchun to‘lov yozilmagan.</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel">
+          <div class="panel-h">${svg('<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0116 0v1"/>', rang, 17)} Kim qaraydi</div>
+          <div class="panel-b">${ish(xona.id).kim.map((n) =>
+            `<div class="mini" data-agent="${n}" tabindex="0" role="button">
+               ${rasmYoki(n, 'mini-rasm')}
+               <span><span class="mini-n">${esc(n)}</span>
+                 <span class="mini-r">${esc(VAZIFA[n] ?? 'agent')}</span></span></div>`).join('')}
+          </div></div>
+        <div class="panel">
+          <div class="panel-h">${svg('<circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/>', rang, 17)} Ma’lumot</div>
+          <div class="panel-b" style="font-size:12.5px;color:var(--ink-2);line-height:2">
+            <div><b>Turi:</b> ${KIND[it.kind] ?? it.kind}</div>
+            <div><b>Manzil:</b> <span style="font-family:var(--mono);font-size:11px">${esc(it.target)}</span></div>
+            <div><b>Bo‘lim:</b> ${esc(xona.nom)}</div>
+            <div><b>Tekshiruv:</b> har 30 daqiqada</div>
+          </div></div>
+      </div>
+    </div>`;
+}
+
+/* ── Agent ── */
+function agentKor(nom) {
+  const it = BINO.find((x) => x.id === 'agentlar')?.items.find((i) => i.nom === nom);
+  const bolimlar = BINO.filter((x) => x.id !== 'agentlar' && ish(x.id).kim.includes(nom));
+  const h = it?.status ?? 'ochiq';
+  const jami = bolimlar.reduce((n, x) => n + x.items.length, 0);
+
+  main.innerHTML = ORQAGA('bosh', 'Agentlar Binosi') + `
+    <div class="hero">
+      <span class="hero-fon" style="background:linear-gradient(120deg,#6c4ef01c,transparent 65%)"></span>
+      ${rasmYoki(nom, 'hero-rasm')}
+      <div class="hero-i">
+        <div class="hero-n">${esc(nom)}</div>
+        <div class="hero-s">${esc(VAZIFA[nom] ?? 'AI agent')}</div>
+        <div class="hero-row">
+          <span class="pill b-${h}">${SNOM[h] ?? h}</span>
+          <span class="pill b-ochiq">${bolimlar.length} bo‘lim · ${jami} loyiha</span>
+          ${it?.at ? `<span class="pill b-ochiq">Oxirgi ish: ${soat(it.at)}</span>` : ''}
+        </div>
+        ${it?.note ? `<div style="margin-top:12px;font-size:13px;color:var(--ink-2)">
+          Hali ishga tushmagan — <b>${esc(it.note)}</b>.</div>` : ''}
+      </div></div>
+    <div class="panel">
+      <div class="panel-h">${svg('<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>', 'var(--blue)', 17)} Qaysi loyihalarga qaraydi</div>
+      ${bolimlar.length ? bolimlar.map((x) => `
+        <div class="r" data-xona="${x.id}" tabindex="0" role="button">
+          <i class="d-${holatOf(x)}"></i>
+          <span style="min-width:0"><span class="r-n">${esc(x.nom)}</span><br>
+            <span class="r-t">${x.items.map((i) => esc(i.nom)).join(' · ')}</span></span>
+          <span class="r-m"><span class="pill b-${holatOf(x)}">${x.items.length} ta</span></span>
+        </div>`).join('')
+      : '<div class="bosh">Hali biror bo‘limga biriktirilmagan.</div>'}
+    </div>`;
+}
+
+/* ═════════ YO'NALTIRISH ═════════ */
+function chiz() {
+  if (kor.turi === 'xona') xonaKor(kor.id);
+  else if (kor.turi === 'loyiha') loyihaKor(kor.id);
+  else if (kor.turi === 'agent') agentKor(kor.id);
+  else boshKor();
+}
+const ketBosh = () => { kor = { turi:'bosh' }; chiz(); };
+const ket = (k) => { kor = k; chiz(); scrollTo({ top: 0, behavior: 'smooth' }); };
+
+main.addEventListener('click', (e) => {
+  if (e.target.closest('#yangila-b')) return yangila();
+  if (e.target.closest('a')) return;
+  const b = e.target.closest('[data-ket]');
+  if (b) { const [t, id] = b.dataset.ket.split(':'); return ket(t === 'bosh' ? { turi:'bosh' } : { turi:t, id }); }
+  const ag = e.target.closest('[data-agent]');
+  if (ag) { e.stopPropagation(); return ket({ turi:'agent', id: ag.dataset.agent }); }
+  const lo = e.target.closest('[data-loyiha]');
+  if (lo) return ket({ turi:'loyiha', id: lo.dataset.loyiha });
+  const xo = e.target.closest('[data-xona]');
+  if (xo) return ket({ turi:'xona', id: xo.dataset.xona });
+});
+main.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const k = e.target.closest('[data-agent],[data-loyiha],[data-xona],[data-ket]');
+  if (k) { e.preventDefault(); k.click(); }
+});
+main.addEventListener('input', (e) => {
+  if (e.target.id !== 'qidir') return;
+  qidiruv = e.target.value;
+  boshKor();
+  const q = document.getElementById('qidir');
+  if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
+});
+document.getElementById('nav-bosh').addEventListener('click', ketBosh);
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && kor.turi !== 'bosh') ketBosh(); });
 
 /* ═════════ JONLI MA'LUMOT ═════════ */
-const lead = document.getElementById('lead');
-const nuqta = document.getElementById('nuqta');
-
 async function yangila() {
   try {
     const r = await fetch('/api/holat', { cache: 'no-store' });
@@ -409,20 +536,12 @@ async function yangila() {
     const d = await r.json();
     BINO = d.xonalar;
     AVATAR = d.avatarlar ?? {};
-    const yomon = BINO.flatMap((x) => x.items).filter((i) => i.status === 'err').length;
-    nuqta.hidden = yomon === 0;
-    lead.textContent = yomon
-      ? `${yomon} ta loyihada muammo bor — qizil belgilarga qarang.`
-      : 'Hammasi joyida. Barcha loyihalar ishlab turibdi.';
   } catch (e) {
-    lead.textContent = 'Ma’lumot olinmadi — ' + e.message;
+    main.innerHTML = `<div class="bosh">Ma’lumot olinmadi — ${esc(e.message)}</div>`;
+    return;
   }
-  chiz(document.getElementById('qidir').value);
+  chiz();
 }
-
-document.getElementById('qidir').addEventListener('input', (e) => chiz(e.target.value));
-document.getElementById('yangila-b').addEventListener('click', yangila);
-
 yangila();
 setInterval(yangila, 60_000);
 </script>
