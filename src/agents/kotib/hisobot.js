@@ -1,7 +1,8 @@
 import cron from 'node-cron';
 import { config } from '../../core/config.js';
 import { createSender, esc } from '../../core/telegram.js';
-import { listProjects, holatOzgarishlari, kvOl, kvQoy, logRun } from '../../core/db.js';
+import { listProjects, holatOzgarishlari, listObunalar, kvOl, kvQoy, logRun } from '../../core/db.js';
+import { qolganKun, oylikXarajat } from '../lingo/index.js';
 import { askText } from '../../core/llm.js';
 import { log } from '../../core/logger.js';
 
@@ -35,12 +36,20 @@ function xomMalumot(fromMs) {
     if (o.turi === 'yiqildi') yiqilish.set(o.nom, (yiqilish.get(o.nom) ?? 0) + 1);
   }
 
+  // Layla yozib boradigan to'lovlar — 14 kun ichidagilari hisobotga tushadi
+  const obunalar = listObunalar({ onlyEnabled: true })
+    .map((o) => ({ ...o, qoldi: qolganKun(o.sana) }))
+    .filter((o) => o.qoldi <= 14)
+    .sort((a, b) => a.qoldi - b.qoldi);
+
   return {
     jami: loyihalar.length,
     hozirYiqilgan: loyihalar.filter((p) => p.status === 'err'),
     ogohlantirish: loyihalar.filter((p) => p.status === 'warn'),
     ozgarishlar,
     beqaror: [...yiqilish.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3),
+    obunalar,
+    oylikXarajat: oylikXarajat(listObunalar({ onlyEnabled: true })),
   };
 }
 
@@ -62,6 +71,16 @@ function matnga(d, fromMs) {
   if (d.beqaror.length) {
     q.push('');
     q.push(`Eng ko'p yiqilgan: ${d.beqaror.map(([n, k]) => `${n} — ${k} marta`).join(', ')}`);
+  }
+  if (d.obunalar.length) {
+    q.push('');
+    q.push('Yaqinlashayotgan to\'lovlar:');
+    for (const o of d.obunalar) {
+      const qachon = o.qoldi < 0 ? `${Math.abs(o.qoldi)} kun oldin o'tib ketgan`
+        : o.qoldi === 0 ? 'bugun' : `${o.qoldi} kun qoldi`;
+      q.push(`  ${o.nom} — ${o.valyuta}${o.summa}, ${qachon}`);
+    }
+    q.push(`Oylik umumiy xarajat: $${d.oylikXarajat.toFixed(2)}`);
   }
   return q.join('\n');
 }

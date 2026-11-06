@@ -1,0 +1,20 @@
+[
+  {
+    "_izoh": "sana — KEYINGI to'lov kuni, YYYY-MM-DD. davr: oylik | yillik | bir marta",
+    "kalit": "claude-pro", "nom": "Claude Pro",
+    "summa": 20, "valyuta": "$", "sana": "2026-12-01", "davr": "oylik"
+  },
+  {
+    "kalit": "vps-eskiz", "nom": "Eskiz VPS", "grp": "infra",
+    "summa": 12, "valyuta": "$", "sana": "2026-11-28", "davr": "oylik"
+  },
+  {
+    "kalit": "domen-subtitr", "nom": "subtitr.uz domeni", "grp": "subtitr",
+    "summa": 30, "valyuta": "$", "sana": "2027-03-15", "davr": "yillik"
+  },
+  {
+    "kalit": "domen-kgf", "nom": "kokandgoldfuture.uz domeni", "grp": "kgf",
+    "summa": 30, "valyuta": "$", "sana": "2027-02-20", "davr": "yillik",
+    "izoh": "KGF sayti shu domenda"
+  }
+]

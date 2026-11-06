@@ -72,13 +72,6 @@ db.exec(`
 
   CREATE INDEX IF NOT EXISTS idx_hist ON chat_history(agent, chat_id, id);
 
-  -- Layla: ingliz tili kursi progressi
-  CREATE TABLE IF NOT EXISTS lingo_progress (
-    id          INTEGER PRIMARY KEY CHECK (id = 1),
-    day         INTEGER NOT NULL DEFAULT 0,
-    last_sent   INTEGER
-  );
-
   -- Rita: ping tarixi (dashboard grafigi uchun)
   CREATE TABLE IF NOT EXISTS checks (
     id      INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -299,18 +292,53 @@ export function clearHistory(agent, chatId) {
   db.prepare('DELETE FROM chat_history WHERE agent = ? AND chat_id = ?').run(agent, String(chatId));
 }
 
-// ---- Layla: kurs progressi ----
+// ---- Layla: obunalar va to'lovlar ----
 
-export function getLingoDay() {
-  const row = db.prepare('SELECT day, last_sent FROM lingo_progress WHERE id = 1').get();
-  return row ?? { day: 0, last_sent: null };
+db.exec(`
+  CREATE TABLE IF NOT EXISTS obunalar (
+    kalit      TEXT PRIMARY KEY,                -- 'claude-pro'
+    nom        TEXT NOT NULL,                   -- 'Claude Pro'
+    summa      REAL NOT NULL,
+    valyuta    TEXT NOT NULL DEFAULT '$',
+    sana       TEXT NOT NULL,                   -- keyingi to'lov, YYYY-MM-DD
+    davr       TEXT NOT NULL DEFAULT 'oylik',   -- oylik | yillik | bir marta
+    grp        TEXT,                            -- qaysi bo'limga tegishli
+    izoh       TEXT,
+    enabled    INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL
+  );
+`);
+
+const _obunaQoy = db.prepare(`
+  INSERT INTO obunalar (kalit, nom, summa, valyuta, sana, davr, grp, izoh, enabled, created_at)
+  VALUES (@kalit, @nom, @summa, @valyuta, @sana, @davr, @grp, @izoh, @enabled, @created_at)
+  ON CONFLICT(kalit) DO UPDATE SET
+    nom = excluded.nom, summa = excluded.summa, valyuta = excluded.valyuta,
+    sana = excluded.sana, davr = excluded.davr, grp = excluded.grp,
+    izoh = excluded.izoh, enabled = excluded.enabled
+`);
+
+const DAVRLAR = ['oylik', 'yillik', 'bir marta'];
+
+export function addObuna({ kalit, nom, summa, valyuta = '$', sana, davr = 'oylik',
+                           grp = null, izoh = null, enabled = true }) {
+  if (!kalit || !nom) throw new Error('Obuna: kalit va nom shart');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(sana))) {
+    throw new Error(`Obuna "${kalit}": sana YYYY-MM-DD ko'rinishida bo'lsin`);
+  }
+  if (!DAVRLAR.includes(davr)) throw new Error(`Obuna "${kalit}": davr noto'g'ri — ${DAVRLAR.join(' | ')}`);
+  _obunaQoy.run({ kalit, nom, summa: Number(summa), valyuta, sana, davr, grp, izoh,
+    enabled: enabled ? 1 : 0, created_at: Date.now() });
 }
 
-export function setLingoDay(day) {
-  db.prepare(
-    'INSERT OR REPLACE INTO lingo_progress (id, day, last_sent) VALUES (1, ?, ?)',
-  ).run(day, Date.now());
+export function listObunalar({ onlyEnabled = false } = {}) {
+  return db.prepare(`SELECT * FROM obunalar ${onlyEnabled ? 'WHERE enabled = 1' : ''} ORDER BY sana`).all();
 }
+export const countObunalar = () => db.prepare('SELECT COUNT(*) AS n FROM obunalar').get().n;
+export const removeObuna = (kalit) => { db.prepare('DELETE FROM obunalar WHERE kalit = ?').run(kalit); };
+export const setObunaSana = (kalit, sana) => {
+  db.prepare('UPDATE obunalar SET sana = ? WHERE kalit = ?').run(sana, kalit);
+};
 
 // ---- Rita: loyihalar nazorati ----
 

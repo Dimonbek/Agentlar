@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "DIMON Agency AI jamoasi: Rita (loyihalar nazorati), Layla (obunalar), Sara (xatolar), Debra (boshliq)",
+  "description": "DIMON Agency AI jamoasi: Rita (loyihalar nazorati), Layla (obunalar va to'lovlar), Sara (xatolar), Debra (boshliq)",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "rita:ping": "node src/index.js --once=rita:ping",
-    "lingo:lesson": "node src/index.js --once=lingo:lesson",
+    "layla:tekshir": "node src/index.js --once=layla:tekshir",
     "debra:kunlik": "node src/index.js --once=debra:kunlik",
     "debra:haftalik": "node src/index.js --once=debra:haftalik"
   },
