@@ -83,6 +83,34 @@ h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; margin-top: 4px
   object-position: top center;
   -webkit-mask-image: linear-gradient(to right, transparent 2%, #000 42%);
   mask-image: linear-gradient(to right, transparent 2%, #000 42%) }
+.c[data-xona="agentlar"] .c-rasm {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  aspect-ratio: 1 / 1;
+  width: auto;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0 20px 20px 0;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 5%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 5%);
+}
+.c[data-xona="agentlar"] .c-bot .c-btn {
+  margin-left: 0;
+  margin-right: auto;
+  position: relative;
+  z-index: 3;
+}
+.c[data-xona="agentlar"] .c-top,
+.c[data-xona="agentlar"] .c-list,
+.c[data-xona="agentlar"] .c-bot {
+  max-width: 50%;
+  position: relative;
+  z-index: 2;
+}
+
 /* Fon va surat mutlaq turadi; qolganlari ular ustida */
 .c > *:not(.c-fon):not(.c-rasm) { position: relative }
 .c-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 15px }
@@ -183,6 +211,150 @@ h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; margin-top: 4px
   .search { width: 100%; min-width: 170px }
   .c-rasm { opacity: .45 }
 }
+
+/* ── Orbit Uslublari ── */
+.stage {
+  position: relative;
+  width: 100%;
+  height: min(72vh, 640px);
+  min-height: 460px;
+  margin-top: 10px;
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.08) 0%, rgba(99, 102, 241, 0.03) 45%, transparent 70%);
+  overflow: hidden;
+  touch-action: manipulation;
+}
+.stage::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.06) 0%, rgba(99, 102, 241, 0.02) 42%, transparent 66%);
+  pointer-events: none;
+}
+.wires { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+
+.hub {
+  position: absolute; left: 0; top: 0;
+  width: 136px; height: 136px; border-radius: 50%;
+  background: linear-gradient(150deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+  border: 2px solid rgba(255,255,255,.85);
+  box-shadow: 0 6px 18px rgba(22,36,107,.15), 0 24px 50px rgba(99,102,241,.28);
+  display: grid; place-items: center; gap: 1px;
+  cursor: pointer; z-index: 6;
+  will-change: transform;
+  transition: box-shadow .2s;
+}
+.hub:hover { box-shadow: 0 8px 24px rgba(22,36,107,.25), 0 30px 70px rgba(99,102,241,.38); }
+.hub-ico { color: #c7d2fe; margin-bottom: 1px; }
+.hub-t { font-size: 14.5px; font-weight: 800; letter-spacing: -.02em; color: #fff; text-align: center; padding: 0 10px; line-height: 1.15; }
+.hub-s { font-size: 10.5px; font-weight: 600; color: #a5b4fc; }
+.hub-ring {
+  position: absolute; inset: -10px; border-radius: 50%;
+  border: 1.5px solid #6366f1; opacity: 0; pointer-events: none;
+}
+.idle .hub-ring { animation: pulse 2.8s ease-out infinite; }
+@keyframes pulse {
+  0%   { transform: scale(.97); opacity: .55 }
+  70%  { transform: scale(1.26); opacity: 0 }
+  100% { transform: scale(1.26); opacity: 0 }
+}
+
+.node {
+  position: absolute; left: 0; top: 0;
+  width: 132px;
+  background: linear-gradient(150deg, #4f46e5 0%, #6366f1 55%, #4338ca 100%);
+  border: 1px solid rgba(255,255,255,.55);
+  border-radius: 14px;
+  padding: 11px 13px;
+  box-shadow: 0 4px 12px rgba(99,102,241,.25), 0 12px 28px rgba(99,102,241,.2);
+  cursor: pointer; z-index: 4;
+  will-change: transform, opacity;
+  transition: box-shadow .18s, filter .18s;
+}
+.node:hover { filter: brightness(1.08); box-shadow: 0 6px 16px rgba(99,102,241,.35), 0 18px 40px rgba(99,102,241,.3); }
+.node-top { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+.node-ico {
+  width: 26px; height: 26px; border-radius: 8px;
+  background: rgba(255,255,255,.2);
+  display: grid; place-items: center; flex-shrink: 0;
+  color: #fff;
+}
+.node-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  margin-left: auto; flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,.5);
+}
+.node-t { font-size: 13px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; color: #fff; }
+.node-s { font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,.75); margin-top: 2px; }
+
+.leaf {
+  position: absolute; left: 0; top: 0;
+  display: flex; align-items: center; gap: 9px;
+  width: 168px;
+  background: #ffffff;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 24px;
+  padding: 7px 12px 7px 7px;
+  box-shadow: 0 2px 8px rgba(22,36,107,.08), 0 8px 20px rgba(99,102,241,.12);
+  z-index: 5;
+  will-change: transform, opacity;
+  cursor: pointer;
+  transition: border-color .18s, box-shadow .18s;
+}
+.leaf:hover { border-color: #6366f1; box-shadow: 0 4px 14px rgba(99,102,241,.22), 0 12px 28px rgba(99,102,241,.18); }
+.leaf-ico {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: #6366f1; color: #fff;
+  display: grid; place-items: center; flex-shrink: 0;
+}
+.leaf-txt { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.leaf-t {
+  font-size: 12px; font-weight: 700; color: #1e1b4b; line-height: 1.25;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.leaf-k {
+  font-size: 9.5px; font-weight: 500; color: #64748b;
+  font-family: var(--m); line-height: 1.3;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.leaf-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0 }
+
+.legend {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 6px 16px;
+  padding-block: 14px 6px;
+  font-size: 11.5px; color: #475569; font-weight: 600;
+}
+.lg { display: flex; align-items: center; gap: 6px; }
+.lg i { width: 8px; height: 8px; border-radius: 50%; display: block }
+.lg-by {
+  display: flex; align-items: center; gap: 6px;
+  color: #64748b; font-weight: 600;
+  border-left: 1px solid #cbd5e1; padding-left: 16px;
+}
+.hint {
+  text-align: center; padding-bottom: 20px;
+  font-size: 12px; color: #64748b; font-weight: 500;
+}
+.kbd {
+  font-family: monospace; font-size: 10.5px; font-weight: 500;
+  background: #ffffff; border: 1px solid #cbd5e1;
+  padding: 2px 7px; border-radius: 5px; color: #334155;
+}
+
+@media (max-width: 560px) {
+  .stage { height: min(68vh, 560px); min-height: 410px }
+  .hub { width: 112px; height: 112px }
+  .hub-t { font-size: 12.5px } .hub-s { font-size: 9.5px }
+  .node { width: 108px; padding: 9px 10px; border-radius: 12px }
+  .node-t { font-size: 11.5px } .node-s { font-size: 9.5px }
+  .node-ico { width: 22px; height: 22px }
+  .leaf { width: 114px; padding: 5px 9px 5px 5px; gap: 6px; border-radius: 20px }
+  .leaf-t { font-size: 10.5px; white-space: normal; line-height: 1.2 }
+  .leaf-k { display: none }
+  .leaf-ico { width: 22px; height: 22px }
+  .leaf-dot { width: 6px; height: 6px }
+}
+
 </style>
 
 <div class="app">
@@ -196,9 +368,9 @@ h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; margin-top: 4px
       <button type="button" class="on" id="nav-bosh">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
         <span>Agentlar</span></button>
-      <button type="button" class="soon" disabled>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>
-        <span>Statistika</span></button>
+      <button type="button" id="nav-orbit">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="8" stroke-dasharray="2 3"/><circle cx="19" cy="8" r="1.5" fill="currentColor"/></svg>
+        <span>Loyihalar</span></button>
       <button type="button" class="soon" disabled>
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/></svg>
         <span>Obunalar</span></button>
@@ -220,12 +392,12 @@ let BINO = [], AVATAR = {};
    CRM ni nazorat qiladi; Layla INFRA to'lovlarini oladi; Sara agentlar
    xatolarini kuzatadi. `yuz` — kartochkadagi katta surat. */
 const ISH = {
-  agentlar: { kim: ['Sara', 'Debra', 'Rita', 'Layla'], yuz: 'Sara'  },
-  kgf:      { kim: ['Debra', 'Rita'],                  yuz: 'Debra' },
-  subtitr:  { kim: ['Rita'],                           yuz: 'Rita'  },
-  tur:      { kim: ['Rita', 'Debra'],                  yuz: 'Rita'  },
-  crm:      { kim: ['Debra', 'Rita'],                  yuz: 'Debra' },
-  infra:    { kim: ['Layla', 'Rita'],                  yuz: 'Layla' },
+  agentlar: { kim: ['Sara', 'Debra', 'Rita', 'Layla'], yuz: 'agentlar' },
+  kgf:      { kim: ['Debra', 'Rita'],                  yuz: 'Debra'    },
+  subtitr:  { kim: ['Sara', 'Rita'],                   yuz: 'Sara'     },
+  tur:      { kim: ['Rita', 'Debra'],                  yuz: 'Rita'     },
+  crm:      { kim: ['Debra', 'Rita'],                  yuz: 'Debra'    },
+  infra:    { kim: ['Layla', 'Rita'],                  yuz: 'Layla'    },
 };
 const ish = (id) => ISH[id] ?? { kim: ['Rita'], yuz: 'Rita' };
 const VAZIFA = {
@@ -315,6 +487,8 @@ function karta(x) {
   const rang = RANG[x.id] ?? '#6c4ef0';
   const { kim, yuz } = ish(x.id);
   const a = AVATAR[yuz.toLowerCase()];
+  const isAgentlar = x.id === 'agentlar';
+
   return `<article class="c" tabindex="0" role="button" data-xona="${x.id}"
       aria-label="${esc(x.nom)}, ${x.items.length} ta">
     <span class="c-fon" style="background:linear-gradient(135deg,${rang}22,${rang}08 60%,transparent)"></span>
@@ -322,17 +496,17 @@ function karta(x) {
     <div class="c-top">
       <span class="c-ico" style="background:${rang}">${svg(ICO[x.id] ?? ICO.infra, '#fff')}</span>
       <span><span class="c-n">${esc(x.nom)}</span><span class="c-s">${esc(x.izoh)}</span></span>
-      <span class="c-cnt">${svg('<circle cx="9" cy="8" r="3.4"/><path d="M15.5 20v-1.5a4 4 0 00-4-4h-5a4 4 0 00-4 4V20"/>', 'currentColor', 13)} ${x.items.length} ta</span>
+      ${!isAgentlar ? `<span class="c-cnt">${svg('<circle cx="9" cy="8" r="3.4"/><path d="M15.5 20v-1.5a4 4 0 00-4-4h-5a4 4 0 00-4 4V20"/>', 'currentColor', 13)} ${x.items.length} ta</span>` : ''}
     </div>
     <div class="c-list">${x.items.slice(0, 6).map((i) =>
       `<div class="c-li"><i class="d-${i.status}"></i><span>${esc(i.nom)}</span></div>`).join('')}
       ${x.items.length > 6 ? `<div class="c-yana">+${x.items.length - 6} ta yana</div>` : ''}</div>
     <div class="c-bot">
-      <span class="stack">${kim.map((n) => {
+      ${!isAgentlar ? `<span class="stack">${kim.map((n) => {
         const av = AVATAR[n.toLowerCase()];
         return av ? `<img src="${av}" alt="${n}" title="${n}" data-agent="${n}">`
                   : `<span class="plus" title="${n}" data-agent="${n}">${n[0]}</span>`;
-      }).join('')}</span>
+      }).join('')}</span>` : ''}
       <button class="c-btn" type="button" data-xona="${x.id}">Barchasini ko‘rish
         ${svg('<path d="M5 12h13M13 6l6 6-6 6"/>', 'currentColor', 13)}</button>
     </div></article>`;
@@ -529,8 +703,337 @@ function agentKor(nom) {
 }
 
 /* ═════════ YO'NALTIRISH ═════════ */
+
+/* ═════════ LOYIHALAR ORBITASI ═════════ */
+let orbitAnimId = null;
+
+const ORBIT_ICO = {
+  zap:   '<path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/>',
+  cpu:   '<rect x="6" y="6" width="12" height="12" rx="2.5"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>',
+  users: '<path d="M16 20v-1.5a4 4 0 00-4-4H6a4 4 0 00-4 4V20"/><circle cx="9" cy="7" r="3.6"/><path d="M22 20v-1.5a4 4 0 00-3-3.85M16.2 3.4a3.6 3.6 0 010 7.2"/>',
+  layer: '<path d="M12 2.5l9.5 4.6L12 11.7 2.5 7.1 12 2.5z"/><path d="M2.5 16.9L12 21.5l9.5-4.6"/><path d="M2.5 12L12 16.6 21.5 12"/>',
+  send:  '<path d="M21.5 2.5L10.8 13.2"/><path d="M21.5 2.5l-6.8 19-3.9-8.3-8.3-3.9 19-6.8z"/>',
+  caps:  '<rect x="2" y="4" width="20" height="16" rx="3.5"/><path d="M6.5 14.5h4.2M13.3 14.5h4.2"/>',
+  grid:  '<rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/>',
+  globe: '<circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8a16 16 0 010 18.4 16 16 0 010-18.4z"/>',
+  panel: '<rect x="2.5" y="3.5" width="19" height="17" rx="2.5"/><path d="M2.5 9h19M9 9v11.5"/>',
+  crown: '<path d="M3 18h18"/><path d="M3 18l-1-9 5.5 4L12 5l4.5 8L22 9l-1 9"/>',
+  pulse: '<path d="M2.5 12h4l2.5-7 5 14 2.5-7h5"/>',
+  card:  '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h3"/>',
+  alert: '<path d="M12 2.8L1.8 20.2h20.4L12 2.8z"/><path d="M12 9.5v4M12 17h.01"/>',
+  play:  '<circle cx="12" cy="12" r="9.2"/><path d="M10 8.5l6 3.5-6 3.5v-7z"/>',
+  db:    '<ellipse cx="12" cy="5.5" rx="8.2" ry="3"/><path d="M3.8 5.5v13c0 1.66 3.67 3 8.2 3s8.2-1.34 8.2-3v-13"/><path d="M3.8 12c0 1.66 3.67 3 8.2 3s8.2-1.34 8.2-3"/>',
+  bot:   '<rect x="3.5" y="8" width="17" height="12" rx="3.5"/><path d="M12 8V4.5M8.5 14h.01M15.5 14h.01"/><circle cx="12" cy="3" r="1.5"/>',
+};
+const svgOrbitIco = (k, size = 15, sw = 1.8) =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+     stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ORBIT_ICO[k] || ORBIT_ICO.grid}</svg>`;
+
+function orbitKor() {
+  if (orbitAnimId) { cancelAnimationFrame(orbitAnimId); orbitAnimId = null; }
+
+  main.innerHTML = `
+    <div class="h-top">
+      <div>
+        <div class="crumb">DIMON AGENCY</div>
+        <h1 class="h-tit">Loyihalar Orbitasi</h1>
+        <p class="h-sub">Markazdan sochilib sekin aylanadigan jonli orbital xarita</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="crumb" id="crumb" style="font-weight:600">Loyihalar</div>
+        <button class="icon-b" id="btn-pause" title="To'xtatish" aria-label="Aylanishni to'xtatish">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="stage idle" id="stage">
+      <svg class="wires" id="wires" aria-hidden="true"></svg>
+      <div class="hub" id="hub" role="button" tabindex="0" aria-label="Loyihalarni ochish">
+        <span class="hub-ring"></span>
+        <span class="hub-ico" id="hub-ico"></span>
+        <span class="hub-t" id="hub-t">Loyihalar</span>
+        <span class="hub-s" id="hub-s">bosing</span>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="lg"><i style="background:var(--ok)"></i>Ishlayapti</span>
+      <span class="lg"><i style="background:var(--warn)"></i>Sekin / ogohlantirish</span>
+      <span class="lg"><i style="background:var(--err)"></i>Ishlamayapti</span>
+      <span class="lg-by">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+        Debra kuzatadi
+      </span>
+    </div>
+    <div class="hint"><span class="kbd">Esc</span> <span id="hint-t">markazni bosing — loyihalar orbitaga chiqadi</span></div>
+  `;
+
+  const stage = document.getElementById('stage');
+  const wires = document.getElementById('wires');
+  const hub   = document.getElementById('hub');
+  const hubT  = document.getElementById('hub-t');
+  const hubS  = document.getElementById('hub-s');
+  const hubI  = document.getElementById('hub-ico');
+  const crumb = document.getElementById('crumb');
+  const hintT = document.getElementById('hint-t');
+  const btnPause = document.getElementById('btn-pause');
+
+  const GROUPS = (BINO && BINO.length ? BINO : []).map((x) => ({
+    id: x.id,
+    name: x.nom,
+    sub: `${x.items.length} ta loyiha`,
+    icon: x.id === 'agentlar' ? 'cpu' : x.id === 'kgf' ? 'zap' : x.id === 'crm' ? 'users' : x.id === 'subtitr' ? 'caps' : x.id === 'tur' ? 'send' : 'panel',
+    status: holatOf(x),
+    items: x.items.map((it) => ({
+      t: it.nom,
+      k: it.kind || it.target || '',
+      ik: it.kind === 'http' ? 'globe' : it.kind === 'docker' ? 'bot' : it.kind === 'agent' ? 'crown' : 'panel',
+      s: it.status || 'ok',
+      raw: it
+    }))
+  }));
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const sv = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+  const ring = sv('circle', { cx:0, cy:0, r:0, fill:'none', stroke:'#6366f1',
+    'stroke-width':1.2, 'stroke-dasharray':'3 8', opacity:0 });
+  const ring2 = sv('circle', { cx:0, cy:0, r:0, fill:'none', stroke:'#6366f1',
+    'stroke-width':1.2, 'stroke-dasharray':'2 7', opacity:0 });
+  wires.append(ring, ring2);
+
+  let hoverCount = 0;
+
+  const nodes = GROUPS.map((g, i) => {
+    const el = document.createElement('div');
+    el.className = 'node';
+    el.setAttribute('role', 'button');
+    el.tabIndex = -1;
+    el.setAttribute('aria-label', `${g.name} — ${g.sub}`);
+    el.innerHTML =
+      `<div class="node-top">
+         <span class="node-ico">${svgOrbitIco(g.icon, 15)}</span>
+         <span class="node-dot d-${g.status}"></span>
+       </div>
+       <div class="node-t">${esc(g.name)}</div>
+       <div class="node-s">${esc(g.sub)}</div>`;
+    stage.appendChild(el);
+
+    const line = sv('line', { stroke:'#6366f1', 'stroke-width':1.4, opacity:0, 'stroke-linecap':'round' });
+    wires.insertBefore(line, wires.firstChild);
+
+    el.addEventListener('click', (e) => { e.stopPropagation(); focusGroup(i); });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); focusGroup(i); }
+    });
+    el.addEventListener('pointerenter', () => hoverCount++);
+    el.addEventListener('pointerleave', () => hoverCount--);
+
+    return { g, el, line, a0: (i / Math.max(1, GROUPS.length)) * Math.PI * 2 - Math.PI / 2, r: 0, sc: 0, op: 0 };
+  });
+
+  const leaves = [];
+  GROUPS.forEach((g, gi) => g.items.forEach((it, j) => {
+    const el = document.createElement('div');
+    el.className = 'leaf';
+    el.setAttribute('role', 'button');
+    el.tabIndex = -1;
+    el.innerHTML =
+      `<span class="leaf-ico">${svgOrbitIco(it.ik, 13, 2)}</span>
+       <span class="leaf-txt">
+         <span class="leaf-t">${esc(it.t)}</span>
+         <span class="leaf-k">${esc(it.k)}</span>
+       </span>
+       <span class="leaf-dot d-${it.s}"></span>`;
+    stage.appendChild(el);
+
+    const line = sv('line', { stroke:'#6366f1', 'stroke-width':1.2, opacity:0,
+      'stroke-dasharray':'3 5', 'stroke-linecap':'round' });
+    wires.insertBefore(line, wires.firstChild);
+
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (it.raw && it.raw.kalit) ket({ turi: 'loyiha', id: it.raw.kalit });
+      else if (it.raw && it.raw.kind === 'agent') ket({ turi: 'agent', id: it.raw.nom.toLowerCase() });
+      else ket({ turi: 'xona', id: g.id });
+    });
+    el.addEventListener('pointerenter', () => hoverCount++);
+    el.addEventListener('pointerleave', () => hoverCount--);
+
+    leaves.push({ gi, el, line, a0: (j / Math.max(1, g.items.length)) * Math.PI * 2 - Math.PI / 2, r: 0, sc: 0, op: 0 });
+  }));
+
+  let mode = 'idle';
+  let sel  = -1;
+  let T = 0, paused = false;
+  let W = 0, H = 0, cx = 0, cy = 0, R = 0, Rf = 0;
+  let mW = -1, mH = -1;
+
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const W_OUT = 0.085;
+  const W_IN  = 0.105;
+  const HUB_F = 0.7;
+
+  function focusRadius() {
+    if (sel < 0) return R * 0.8;
+    const hubR = (hub.offsetWidth / 2) * HUB_F;
+    let half = 46;
+    for (const lf of leaves) if (lf.gi === sel) half = Math.max(half, lf.el.offsetWidth / 2);
+    const need = hubR + half + 14;
+    const cap  = Math.min(W, H) / 2 - half - 4;
+    return Math.max(need, Math.min(R * 0.88, Math.max(cap, need)));
+  }
+
+  function measure() {
+    const b = stage.getBoundingClientRect();
+    W = b.width; H = b.height; cx = W / 2; cy = H / 2;
+    mW = stage.clientWidth; mH = stage.clientHeight;
+    R = Math.max(104, Math.min(W, H) / 2 - (W < 560 ? 60 : 88));
+    wires.setAttribute('width', W);
+    wires.setAttribute('height', H);
+    wires.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    for (const c of [ring, ring2]) { c.setAttribute('cx', cx); c.setAttribute('cy', cy); }
+    Rf = focusRadius();
+  }
+
+  const resizeObs = new ResizeObserver(measure);
+  resizeObs.observe(stage);
+  measure();
+
+  function setMode(m, i) {
+    mode = m; sel = (i === undefined ? -1 : i);
+    stage.classList.toggle('idle', m === 'idle');
+    nodes.forEach((n) => { n.el.tabIndex = m === 'orbit' ? 0 : -1; });
+    leaves.forEach((lf) => { lf.el.tabIndex = m === 'focus' && lf.gi === sel ? 0 : -1; });
+
+    if (m === 'focus') {
+      const g = GROUPS[sel];
+      hubI.innerHTML = svgOrbitIco(g.icon, 21);
+      hubT.textContent = g.name;
+      hubS.textContent = '← orqaga';
+      crumb.innerHTML = `Loyihalar <span style="color:var(--t-3)">/</span> <b>${esc(g.name)}</b>`;
+      hintT.textContent = `${g.items.length} ta loyiha — markazni bosing, orqaga qaytasiz`;
+    } else {
+      hubI.innerHTML = svgOrbitIco('grid', 21);
+      hubT.textContent = 'Loyihalar';
+      hubS.textContent = m === 'orbit' ? GROUPS.length + ' guruh' : 'bosing';
+      crumb.textContent = 'Loyihalar';
+      hintT.textContent = m === 'orbit'
+        ? "guruhni bosing — faqat uning loyihalari ko'rinadi"
+        : 'markazni bosing — loyihalar orbitaga chiqadi';
+    }
+    Rf = focusRadius();
+  }
+  const focusGroup = (i) => setMode(mode === 'focus' && sel === i ? 'orbit' : 'focus', i);
+
+  hub.addEventListener('click', () => setMode(mode === 'idle' ? 'orbit' : mode === 'focus' ? 'orbit' : 'idle'));
+  hub.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hub.click(); }
+  });
+  stage.addEventListener('click', (e) => { if (e.target === stage) setMode(mode === 'focus' ? 'orbit' : 'idle'); });
+
+  btnPause.addEventListener('click', () => {
+    paused = !paused;
+    btnPause.innerHTML = paused
+      ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5l12 7.5-12 7.5z"/></svg>'
+      : '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+    btnPause.title = paused ? 'Davom ettirish' : "To'xtatish";
+  });
+
+  const ease = (cur, target, dt, sp) => cur + (target - cur) * (1 - Math.exp(-sp * dt));
+  let last = performance.now(), hubSc = 1, ringR = 0, ring2R = 0, ringO = 0, ring2O = 0;
+
+  function frame(now) {
+    if (kor.turi !== 'orbit') return;
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    if (stage.clientWidth !== mW || stage.clientHeight !== mH) measure();
+    if (!paused && !hoverCount && !reduce) T += dt;
+
+    const k = 7;
+    const inFocus = mode === 'focus';
+    const inOrbit = mode === 'orbit';
+
+    ringR = ease(ringR, inOrbit ? R : R * 0.42, dt, k);
+    ringO = ease(ringO, inOrbit ? 0.3 : 0, dt, k);
+    ring.setAttribute('r', ringR.toFixed(1));
+    ring.setAttribute('opacity', ringO.toFixed(3));
+
+    ring2R = ease(ring2R, inFocus ? Rf : Rf * 0.35, dt, k);
+    ring2O = ease(ring2O, inFocus ? 0.32 : 0, dt, k);
+    ring2.setAttribute('r', ring2R.toFixed(1));
+    ring2.setAttribute('opacity', ring2O.toFixed(3));
+
+    hubSc = ease(hubSc, inFocus ? HUB_F : 1, dt, k);
+    hub.style.transform = `translate(${cx}px, ${cy}px) translate(-50%, -50%) scale(${hubSc.toFixed(3)})`;
+
+    const aOut = T * W_OUT;
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      const show = inOrbit;
+      const tr  = mode === 'idle' ? 0 : inFocus ? (i === sel ? 0 : R * 1.18) : R;
+      const tsc = mode === 'idle' ? 0.3 : show ? 1 : 0.4;
+      const top = show ? 1 : 0;
+
+      n.r  = ease(n.r,  tr,  dt, k);
+      n.sc = ease(n.sc, tsc, dt, k);
+      n.op = ease(n.op, top, dt, k);
+
+      const a = n.a0 + aOut;
+      const x = cx + Math.cos(a) * n.r;
+      const y = cy + Math.sin(a) * n.r;
+
+      n.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%) scale(${n.sc.toFixed(3)})`;
+      n.el.style.opacity = n.op.toFixed(3);
+      n.el.style.pointerEvents = n.op > 0.55 ? 'auto' : 'none';
+
+      const lo = n.op * 0.42;
+      n.line.setAttribute('opacity', lo.toFixed(3));
+      if (lo > 0.01) {
+        n.line.setAttribute('x1', cx); n.line.setAttribute('y1', cy);
+        n.line.setAttribute('x2', x.toFixed(1)); n.line.setAttribute('y2', y.toFixed(1));
+      }
+    }
+
+    const aIn = T * W_IN;
+    for (const lf of leaves) {
+      const show = inFocus && lf.gi === sel;
+      lf.r  = ease(lf.r,  show ? Rf : Rf * 0.3, dt, k);
+      lf.sc = ease(lf.sc, show ? 1 : 0.45, dt, k);
+      lf.op = ease(lf.op, show ? 1 : 0, dt, k);
+
+      const a = lf.a0 + aIn;
+      const x = cx + Math.cos(a) * lf.r;
+      const y = cy + Math.sin(a) * lf.r;
+
+      lf.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) translate(-50%, -50%) scale(${lf.sc.toFixed(3)})`;
+      lf.el.style.opacity = lf.op.toFixed(3);
+      lf.el.style.pointerEvents = lf.op > 0.55 ? 'auto' : 'none';
+
+      const lo = lf.op * 0.4;
+      lf.line.setAttribute('opacity', lo.toFixed(3));
+      if (lo > 0.01) {
+        lf.line.setAttribute('x1', cx); lf.line.setAttribute('y1', cy);
+        lf.line.setAttribute('x2', x.toFixed(1)); lf.line.setAttribute('y2', y.toFixed(1));
+      }
+    }
+
+    orbitAnimId = requestAnimationFrame(frame);
+  }
+
+  setMode('idle');
+  orbitAnimId = requestAnimationFrame(frame);
+}
+
 function chiz() {
-  if (kor.turi === 'xona') xonaKor(kor.id);
+  const nb = document.getElementById('nav-bosh');
+  const no = document.getElementById('nav-orbit');
+  if (nb) nb.classList.toggle('on', kor.turi === 'bosh');
+  if (no) no.classList.toggle('on', kor.turi === 'orbit');
+
+  if (orbitAnimId) { cancelAnimationFrame(orbitAnimId); orbitAnimId = null; }
+
+  if (kor.turi === 'orbit') orbitKor();
+  else if (kor.turi === 'xona') xonaKor(kor.id);
   else if (kor.turi === 'loyiha') loyihaKor(kor.id);
   else if (kor.turi === 'agent') agentKor(kor.id);
   else boshKor();
@@ -563,7 +1066,11 @@ main.addEventListener('input', (e) => {
   if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
 });
 document.getElementById('nav-bosh').addEventListener('click', ketBosh);
-addEventListener('keydown', (e) => { if (e.key === 'Escape' && kor.turi !== 'bosh') ketBosh(); });
+const noBtn = document.getElementById('nav-orbit');
+if (noBtn) noBtn.addEventListener('click', () => ket({ turi: 'orbit' }));
+addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && kor.turi !== 'bosh') ketBosh();
+});
 
 /* ═════════ JONLI MA'LUMOT ═════════ */
 async function yangila() {
