@@ -179,6 +179,20 @@ export function logRun(job, ok, note = null) {
   runStmt.run(job, ok ? 1 : 0, note, Date.now());
 }
 
+/**
+ * Bitta agentning oxirgi ishi. Job nomi "rita:ping" ko'rinishida, shuning
+ * uchun prefiks bo'yicha qidiramiz: agentning qaysi vazifasi bo'lishidan
+ * qat'i nazar, eng oxirgi ishlagan vaqti kerak.
+ */
+const oxirgiIshStmt = db.prepare(
+  `SELECT job, ok, note, ran_at FROM runs
+     WHERE job LIKE ? ORDER BY ran_at DESC LIMIT 1`,
+);
+
+export function oxirgiIsh(prefiks) {
+  return oxirgiIshStmt.get(prefiks + '%') ?? null;
+}
+
 /** 90 kundan eski yozuvlarni tozalaydi — DB cheksiz o'smasin. */
 export function prune(days = 90) {
   const cutoff = Date.now() - days * 86400_000;

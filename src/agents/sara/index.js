@@ -149,6 +149,9 @@ export async function tekshir() {
   const jami = yigilgan.reduce((s, y) => s + y.guruh.size, 0);
   if (!tanlangan.length) {
     log.info(`Sara: ${jami} ta xato turi ko'rildi, yangisi yo'q`);
+    // Jim o'tgan tekshiruv ham ish — aks holda sahifada Sara to'xtab
+    // qolgandek ko'rinadi (holat oxirgi yozuvdan hisoblanadi).
+    logRun('sara:tekshir', 1, jami ? `${jami} tur, yangisi yo'q` : 'xato yo\'q');
     return { korilgan: jami, aytilgan: 0 };
   }
 

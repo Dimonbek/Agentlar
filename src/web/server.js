@@ -3,7 +3,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from '../core/config.js';
-import { listProjects, recentChecks } from '../core/db.js';
+import { listProjects, recentChecks, oxirgiIsh } from '../core/db.js';
 import { log } from '../core/logger.js';
 
 const BU = dirname(fileURLToPath(import.meta.url));
@@ -26,18 +26,52 @@ const GURUH = {
   infra:    { nom: 'INFRA',    izoh: 'umumiy xizmatlar',  rang: '#64748b' },
 };
 
-/** Agentlarning o'zi — bazada emas, chunki ular kuzatilmaydi, kuzatadi. */
+/*
+ * Agentlar — bazada loyiha sifatida yo'q, chunki ular kuzatilmaydi, kuzatadi.
+ * Holat qo'lda yozilmaydi: har agent ishlaganda `runs` jadvaliga yozuv
+ * tushadi, shuning uchun oxirgi yozuvning vaqtiga qaraymiz. `kutish` —
+ * shu agent qancha vaqtda bir ishlashi; ikki baravar kechiksa ogohlantirish.
+ */
+const AGENTLAR = [
+  { nom: 'Debra', kalit: 'debra', target: 'ertalabki hisobot',    kutish: 24 * 3600_000 },
+  { nom: 'Rita',  kalit: 'rita',  target: 'har 30 daqiqada ping', kutish: 30 * 60_000 },
+  { nom: 'Layla', kalit: 'layla', target: 'obunalar',             kutish: 24 * 3600_000 },
+  { nom: 'Sara',  kalit: 'sara',  target: 'xatolar',              kutish: 15 * 60_000 },
+];
+
+const KECHIKISH = (ms) => {
+  const d = Math.round(ms / 60_000);
+  if (d < 90) return `${d} daqiqa`;
+  const s = Math.round(d / 60);
+  return s < 36 ? `${s} soat` : `${Math.round(s / 24)} kun`;
+};
+
 function agentlar() {
-  const oxirgi = listProjects()
-    .map((p) => p.last_check)
-    .filter(Boolean)
-    .sort((a, b) => b - a)[0] ?? null;
-  return [
-    { nom: 'Debra', kind: 'agent', target: 'ertalabki hisobot',    status: 'warn', note: '4-bosqich' },
-    { nom: 'Rita',  kind: 'agent', target: 'har 30 daqiqada ping', status: 'ok',   at: oxirgi },
-    { nom: 'Layla', kind: 'agent', target: 'obunalar',             status: 'warn', note: '2-bosqich' },
-    { nom: 'Sara',  kind: 'agent', target: 'xatolar',              status: 'warn', note: '3-bosqich' },
-  ];
+  const now = Date.now();
+  return AGENTLAR.map((a) => {
+    // .env dagi ACTIVE_AGENTS da yo'q bo'lsa — o'chirilgan, kutish ham yo'q
+    if (!config.activeAgents.includes(a.kalit)) {
+      return { nom: a.nom, kind: 'agent', target: a.target,
+        status: 'ochiq', note: 'hozircha o’chirilgan' };
+    }
+
+    const oxirgi = oxirgiIsh(`${a.kalit}:`);
+    if (!oxirgi) {
+      return { nom: a.nom, kind: 'agent', target: a.target,
+        status: 'warn', note: 'hali ishlamadi' };
+    }
+
+    const ortda = now - oxirgi.ran_at;
+    const status = !oxirgi.ok ? 'err' : ortda > a.kutish * 2 ? 'warn' : 'ok';
+    const note = !oxirgi.ok
+      ? `xato: ${oxirgi.note || 'sabab yozilmagan'}`
+      : status === 'warn'
+        ? `${KECHIKISH(ortda)} oldin ishlagan`
+        : oxirgi.note || null;
+
+    return { nom: a.nom, kind: 'agent', target: a.target,
+      status, at: oxirgi.ran_at, note };
+  });
 }
 
 /**
