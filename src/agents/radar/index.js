@@ -5,10 +5,11 @@ import { config } from '../../core/config.js';
 import { createSender, esc } from '../../core/telegram.js';
 import {
   listProjects, countProjects, addProject,
-  recordCheck, pruneChecks, logRun,
+  recordCheck, pruneChecks, logRun, kvQoy,
 } from '../../core/db.js';
 import { log } from '../../core/logger.js';
 import { checkProject } from './ping.js';
+import { profilaktika } from './salomat.js';
 
 const { send } = createSender({
   token: config.radar.token,
@@ -123,10 +124,56 @@ export async function sweep() {
   return { checked: projects.length, alerts };
 }
 
+const BELGI = { err: '🔴', warn: '🟡', ok: '🟢' };
+
+/*
+ * Profilaktika — kunda bir marta. Hammasi joyida bo'lsa Telegramga yozilmaydi:
+ * har kuni "disk 64% to'lgan" deb turadigan xabarni odam bir haftada o'qimay
+ * qo'yadi, keyin haqiqiy ogohlantirishni ham o'tkazib yuboradi.
+ *
+ * Natija baribir bazaga yoziladi — dashboard shu yerdan o'qiydi.
+ */
+export async function profilaktikaIsh() {
+  const n = await profilaktika();
+  kvQoy('rita:salomat', JSON.stringify(n));
+
+  // Jiddiylari yuqorida tursin
+  const tartib = { err: 0, warn: 1 };
+  const muhim = [...n.server, ...n.ssl, ...n.domen, ...n.sekin]
+    .filter((x) => x.status !== 'ok')
+    .sort((a, b) => tartib[a.status] - tartib[b.status]);
+
+  if (!muhim.length) {
+    log.info('Rita: profilaktika — hammasi joyida');
+    logRun('rita:salomat', true, 'hammasi joyida');
+    return n;
+  }
+
+  const qatorlar = muhim.map((x) => {
+    const nom = x.nom || x.host || x.domen || x.kalit;
+    return `${BELGI[x.status]} <b>${esc(nom)}</b> — ${esc(x.matn)}`;
+  });
+
+  // Xotira muammosi bo'lsa "kim yeyapti?" degan savol darhol tug'iladi
+  const xotira = muhim.some((x) => x.kalit === 'ram' || x.kalit === 'swap');
+  if (xotira && n.ogir.length) {
+    qatorlar.push('', '<i>Eng ko\'p xotira olgan konteynerlar:</i>');
+    for (const k of n.ogir) qatorlar.push(`• ${esc(k.nom)} — ${esc(k.xotira)} (CPU ${esc(k.cpu)})`);
+  }
+
+  await send(`🩺 <b>Rita — profilaktika</b>\n\n${qatorlar.join('\n')}`)
+    .catch((e) => log.error(`Rita profilaktika xabari ketmadi: ${e.message}`));
+
+  log.info(`Rita: profilaktika — ${muhim.length} ta e'tibor talab qiladigan narsa`);
+  logRun('rita:salomat', true, `${muhim.length} ogohlantirish`);
+  return n;
+}
+
 export const jobs = {
   // Qo'lda ishga tushirilganda ham urug' yuklanadi: aks holda birinchi
   // `npm run rita:ping` bo'sh bazaga urilib, hech narsa tekshirmasdi.
   'rita:ping': async () => { seedProjects(); return sweep(); },
+  'rita:salomat': profilaktikaIsh,
 };
 
 export function startRadar() {
@@ -138,6 +185,13 @@ export function startRadar() {
       logRun('rita:ping', false, e.message);
     });
   }, opts);
+  cron.schedule(config.salomat.cron, () => {
+    profilaktikaIsh().catch((e) => {
+      log.error('Rita profilaktika xatosi:', e.message);
+      logRun('rita:salomat', false, e.message);
+    });
+  }, opts);
   cron.schedule('0 4 * * 0', () => pruneChecks(config.monitor.keepDays), opts);
-  log.info(`Rita 🛰 nazorati ishga tushdi — "${config.monitor.cron}" (${config.tz})`);
+  log.info(`Rita 🛰 nazorati ishga tushdi — ping "${config.monitor.cron}", `
+    + `profilaktika "${config.salomat.cron}" (${config.tz})`);
 }

@@ -114,6 +114,44 @@ export const config = {
     seedFile: process.env.PROJECTS_SEED || 'data/projects.json',
   },
 
+  // Rita — profilaktika: bugun ishlayapti, lekin ertaga nima buziladi?
+  salomat: {
+    cron: process.env.CRON_SALOMAT || '15 9 * * *',   // har kuni 09:15
+
+    // Server resurslari, foizda
+    diskWarn: num('DISK_WARN', 80),
+    diskErr: num('DISK_ERR', 90),
+    ramWarn: num('RAM_WARN', 85),
+    ramErr: num('RAM_ERR', 94),
+    swapWarn: num('SWAP_WARN', 80),
+    // Yadroga nisbatan yuk: 1 — hamma yadro to'la band, 2 — navbat ikki barobar
+    yukWarn: num('YUK_WARN', 2),
+
+    // Necha kun qolganda aytilsin
+    sslWarn: num('SSL_WARN', 14),
+    sslErr: num('SSL_ERR', 7),
+    domenWarn: num('DOMEN_WARN', 30),
+    domenErr: num('DOMEN_ERR', 14),
+
+    // Sekinlashuv: ikki shart birga bajarilsa aytiladi
+    karra: num('SEKIN_KARRA', 2),
+    qoshimcha: num('SEKIN_QOSHIMCHA', 300),
+    // Shundan kam o'lchov bo'lsa solishtirmaymiz — tasodifga aylanadi
+    ozKam: num('SEKIN_OZ_KAM', 10),
+
+    // Bizga tegishli bo'lmagan hostlar: bepul subdomen xizmatlari. Sayt
+    // ularda turishi mumkin, lekin domen ijarasini biz to'lamaymiz.
+    begona: [
+      /\.sslip\.io$/i, /\.nip\.io$/i, /\.localhost$/i,
+      /\.railway\.app$/i, /\.vercel\.app$/i, /\.netlify\.app$/i,
+      /\.onrender\.com$/i, /\.github\.io$/i, /\.herokuapp\.com$/i,
+      /\.ngrok(?:-free)?\.app$/i, /\.fly\.dev$/i,
+    ],
+    // Loyiha ro'yxatida yo'q, lekin biz to'laydigan domenlar (vergul bilan)
+    domenlar: (process.env.RITA_DOMENLAR || '')
+      .split(',').map((d) => d.trim().toLowerCase()).filter(Boolean),
+  },
+
   // Sara — loyihalardagi xatoliklarni jurnaldan topadi
   sara: {
     // Alohida bot bo'lmasa Ritaning boti bilan yuboradi

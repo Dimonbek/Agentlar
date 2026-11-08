@@ -414,6 +414,23 @@ export function recentChecks(key, limit = 48) {
     .reverse();
 }
 
+/**
+ * Berilgan davrdagi javob vaqtlari — sekinlashuvni aniqlash uchun.
+ *
+ * 'err' olinmaydi: yiqilgan paytdagi raqam javob vaqti emas, u kutish
+ * muddati yoki ulanish xatosining tezligi. Lekin 'warn' OLINADI — sekin
+ * javob aynan 'warn' deb yoziladi, uni chiqarib tashlasak sekinlashuvni
+ * o'lchayotgan so'rov o'zi izlayotgan o'lchovlarni tashlab yuborardi.
+ */
+export function msOraliq(key, fromMs, toMs = Date.now()) {
+  return db
+    .prepare(`SELECT ms FROM checks
+                WHERE pkey = ? AND at >= ? AND at < ? AND ms IS NOT NULL
+                  AND status IN ('ok', 'warn')`)
+    .all(key, fromMs, toMs)
+    .map((r) => r.ms);
+}
+
 /** Ping tarixini kesadi — baza cheksiz o'smasin. */
 export function pruneChecks(days = 30) {
   db.prepare('DELETE FROM checks WHERE at < ?').run(Date.now() - days * 86400_000);

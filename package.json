@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node src/index.js",
     "rita:ping": "node src/index.js --once=rita:ping",
+    "rita:salomat": "node src/index.js --once=rita:salomat",
     "layla:tekshir": "node src/index.js --once=layla:tekshir",
     "debra:kunlik": "node src/index.js --once=debra:kunlik",
     "debra:haftalik": "node src/index.js --once=debra:haftalik"

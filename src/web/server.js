@@ -3,7 +3,7 @@ import { readdir, readFile } from 'node:fs/promises';
 import { dirname, extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { config } from '../core/config.js';
-import { listProjects, recentChecks, oxirgiIsh } from '../core/db.js';
+import { listProjects, recentChecks, oxirgiIsh, kvOl } from '../core/db.js';
 import { log } from '../core/logger.js';
 
 const BU = dirname(fileURLToPath(import.meta.url));
@@ -124,7 +124,23 @@ function holat() {
       tarix: recentChecks(p.key, 24).map((c) => ({ s: c.status, ms: c.ms, at: c.at })),
     });
   }
-  return { yangilandi: Date.now(), xonalar: [...xonalar.values()] };
+  return {
+    yangilandi: Date.now(),
+    xonalar: [...xonalar.values()],
+    // Ritaning profilaktikasi: kunda bir marta yoziladi, shu yerdan o'qiladi.
+    // Sahifa ochilganda SSL va domen so'rovlari qayta yuborilmaydi.
+    salomat: salomat(),
+  };
+}
+
+/** Rita oxirgi profilaktikada nima ko'rgan. Hali ishlamagan bo'lsa — null. */
+function salomat() {
+  try {
+    const xom = kvOl('rita:salomat');
+    return xom ? JSON.parse(xom) : null;
+  } catch {
+    return null;                     // buzilgan yozuv sahifani yiqitmasin
+  }
 }
 
 function javob(res, kod, tur, tana, keshsiz = true) {
