@@ -38,6 +38,7 @@ export const config = {
       rita: process.env.RADAR_BOT_TOKEN,
       layla: process.env.LINGO_BOT_TOKEN,
       debra: process.env.KOTIB_BOT_TOKEN,
+      sara: process.env.SARA_BOT_TOKEN,
     },
   },
 
@@ -111,6 +112,45 @@ export const config = {
     freshRestartMs: num('DOCKER_FRESH_RESTART_MS', 120_000),
     keepDays: num('PING_KEEP_DAYS', 30),
     seedFile: process.env.PROJECTS_SEED || 'data/projects.json',
+  },
+
+  // Sara — loyihalardagi xatoliklarni jurnaldan topadi
+  sara: {
+    // Alohida bot bo'lmasa Ritaning boti bilan yuboradi
+    token: process.env.SARA_BOT_TOKEN || req('RADAR_BOT_TOKEN'),
+    cron: process.env.CRON_XATO || '*/15 * * * *',
+    // Har tekshiruvda jurnalning shuncha oxirgi daqiqasi o'qiladi.
+    // Cron oralig'idan kattaroq — qator yo'qolib qolmasin.
+    oynaDaqiqa: num('XATO_OYNA_DAQIQA', 20),
+    // Avval ko'rilgan xato shuncha marta takrorlansa — qayta aytiladi
+    portlash: num('XATO_PORTLASH', 50),
+    // O'sha xato haqida qayta aytishdan oldingi tinchlik (soat)
+    qaytaSoat: num('XATO_QAYTA_SOAT', 6),
+    // Bir xabarda nechta xato turi (qolgani bazada qoladi)
+    birMarta: num('XATO_BIR_MARTA', 5),
+    keepDays: num('XATO_KEEP_DAYS', 30),
+    // Jim ro'yxat — o'z-o'zidan tuzaladigan o'tkinchi uzilishlar. Haqiqiy
+    // jurnallarda tekshirilgan: hisobot-kunlik-botda 478 xatodan 469 tasi
+    // shu "fetch failed", kgf-resume-botda 31 tadan 31 tasi Telegram tarmoq
+    // uzilishi. Bular haqida xabar bersa, Sara foydasiz shovqinga aylanadi.
+    jim: [
+      // Telegram polling uzilishlari — bot o'zi qayta ulanadi
+      /Polling tarmoq uzilishi/i,
+      /TelegramNetworkError/i,
+      /TelegramServerError/i,
+      /getUpdates xatosi/i,
+      /Failed to fetch updates/i,
+      /fetch failed$/i,
+      /Bad Gateway/i,
+      // Brauzer har kirganda so'raydi, sayt ishlashiga ta'sir qilmaydi
+      /favicon\.ico/i,
+      /robots\.txt|apple-touch-icon|\.well-known/i,
+      // Brauzerning o'zi so'rovni bekor qilgan (boshqa sahifaga o'tdi).
+      // Caddy jurnalida tekshirilgan: logo va ikonka yuklanishlari.
+      /H3_REQUEST_CANCELLED|REQUEST_CANCELLED/i,
+      /aborting with incomplete response/i,
+      /client canceled|context canceled|broken pipe/i,
+    ],
   },
 
   // Ofis sahifasi. Tashqariga to'g'ridan-to'g'ri chiqmaydi — Caddy parol

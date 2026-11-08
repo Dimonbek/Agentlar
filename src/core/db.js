@@ -405,6 +405,48 @@ export function pruneChecks(days = 30) {
   db.prepare('DELETE FROM checks WHERE at < ?').run(Date.now() - days * 86400_000);
 }
 
+// ---- Sara: xatoliklar ----
+
+db.exec(`
+  -- Har xato turi bitta qator: bir xil xato ming marta takrorlansa ham
+  -- soni oshadi, yangi yozuv paydo bo'lmaydi.
+  CREATE TABLE IF NOT EXISTS xatolar (
+    manba    TEXT NOT NULL,          -- konteyner yoki servis nomi
+    barmoq   TEXT NOT NULL,          -- raqam va sanalardan tozalangan shakl
+    xabar    TEXT NOT NULL,          -- asl matndan namuna
+    soni     INTEGER NOT NULL DEFAULT 0,
+    birinchi INTEGER NOT NULL,
+    oxirgi   INTEGER NOT NULL,
+    aytilgan INTEGER,                -- oxirgi marta Telegramga aytilgan vaqt
+    PRIMARY KEY (manba, barmoq)
+  );
+`);
+
+const _xatoOl = db.prepare('SELECT * FROM xatolar WHERE manba = ? AND barmoq = ?');
+const _xatoQoy = db.prepare(`
+  INSERT INTO xatolar (manba, barmoq, xabar, soni, birinchi, oxirgi)
+  VALUES (@manba, @barmoq, @xabar, @soni, @at, @at)
+  ON CONFLICT(manba, barmoq) DO UPDATE SET
+    soni = soni + @soni, oxirgi = @at, xabar = excluded.xabar
+`);
+const _xatoAytildi = db.prepare('UPDATE xatolar SET aytilgan = ? WHERE manba = ? AND barmoq = ?');
+
+/** Xatoni yozadi va avval ko'rilganmi — shuni qaytaradi. */
+export function xatoYoz({ manba, barmoq, xabar, soni = 1, at = Date.now() }) {
+  const oldin = _xatoOl.get(manba, barmoq);
+  _xatoQoy.run({ manba, barmoq, xabar, soni, at });
+  return { yangimi: !oldin, oldingiSoni: oldin?.soni ?? 0, aytilgan: oldin?.aytilgan ?? null };
+}
+export const xatoAytildi = (manba, barmoq) => { _xatoAytildi.run(Date.now(), manba, barmoq); };
+export const listXatolar = (limit = 50) =>
+  db.prepare('SELECT * FROM xatolar ORDER BY oxirgi DESC LIMIT ?').all(limit);
+/** Berilgan davrda ko'rilgan xatolar — hisobot uchun. */
+export const xatolarOraliq = (fromMs) =>
+  db.prepare('SELECT * FROM xatolar WHERE oxirgi >= ? ORDER BY soni DESC').all(fromMs);
+export const pruneXatolar = (days = 30) => {
+  db.prepare('DELETE FROM xatolar WHERE oxirgi < ?').run(Date.now() - days * 86400_000);
+};
+
 // ---- Debra: hisobot uchun ----
 
 db.exec(`

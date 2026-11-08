@@ -1,6 +1,7 @@
 import { startRadar, jobs } from './agents/radar/index.js';
 import { startLingo, lingoJobs } from './agents/lingo/index.js';
 import { startHisobot, hisobotJobs } from './agents/kotib/hisobot.js';
+import { startSara, saraJobs } from './agents/sara/index.js';
 import { personas } from './core/personas.js';
 import { createChatBot } from './core/interactive.js';
 import { attachBusiness, BUSINESS_UPDATES } from './agents/kotib/business.js';
@@ -10,7 +11,7 @@ import { log } from './core/logger.js';
 
 const onceArg = process.argv.find((a) => a.startsWith('--once='));
 
-const allJobs = { ...jobs, ...lingoJobs, ...hisobotJobs };
+const allJobs = { ...jobs, ...lingoJobs, ...hisobotJobs, ...saraJobs };
 
 if (onceArg) {
   // Bir martalik ishga tushirish: npm run radar:news / npm run lingo:lesson
@@ -39,11 +40,15 @@ else log.info('Layla 📚 dam olmoqda — dars jadvali o\'chirilgan');
 if (isActive('debra')) startHisobot();
 else log.info('Debra 🗂 dam olmoqda — hisobot jadvali o\'chirilgan');
 
-// 4. Ofis sahifasi — loyihalar holatini ko'rsatadi
+// 4. Sara — loyihalardagi xatoliklarni jurnaldan topadi
+if (isActive('sara')) startSara();
+else log.info('Sara 🔎 dam olmoqda — xatoliklar nazorati o\'chirilgan');
+
+// 5. Ofis sahifasi — loyihalar holatini ko'rsatadi
 if (config.web.enabled) startWeb();
 else log.info('Ofis sahifasi o\'chirilgan (ENABLE_WEB=0)');
 
-// 4. Interaktiv suhbat — faqat faol agentlar guruhni tinglaydi
+// 6. Interaktiv suhbat — faqat faol agentlar guruhni tinglaydi
 const bots = [];
 if (config.chat.enabled && config.chat.groupChatId) {
   for (const [key, persona] of Object.entries(personas)) {
