@@ -371,6 +371,34 @@ h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; margin-top: 4px
 }
 .leaf-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0 }
 
+/* Telefonda orbita o'rniga ro'yxat. Aylana 375 px ga sig'maydi: markazning
+   radiusi va kartaning yarmi qo'shilganda kartalar markazdan 129 px narida
+   turishi kerak, ekran chetiga urilmaslik uchun esa 94 px dan uzoqqa chiqa
+   olmaydi. Qancha kichraytirsa ham bu ikki shart bir vaqtda bajarilmaydi. */
+.orb-l { display: flex; flex-direction: column; gap: 10px; margin-top: 18px }
+.orb-g { width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line);
+         border-radius: 16px; box-shadow: var(--sh); overflow: hidden }
+.orb-b { width: 100%; display: flex; align-items: center; gap: 11px; padding: 13px 14px;
+         background: none; border: 0; cursor: pointer; font: inherit; color: inherit;
+         text-align: left }
+.orb-ico { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center;
+           color: #fff; flex-shrink: 0 }
+.orb-txt { flex: 1; min-width: 0 }
+.orb-n { display: block; font-size: 14px; font-weight: 800; letter-spacing: -.01em; color: var(--ink) }
+.orb-s { display: block; font-size: 11.5px; font-weight: 600; color: var(--ink-3); margin-top: 1px }
+.orb-d { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0 }
+.orb-ch { color: var(--ink-3); flex-shrink: 0; transition: transform .18s }
+.orb-b[aria-expanded="true"] .orb-ch { transform: rotate(90deg) }
+.orb-i { display: flex; align-items: center; gap: 10px; padding: 11px 14px 11px 16px;
+         border-top: 1px solid var(--line); cursor: pointer }
+.orb-i:last-child { border-radius: 0 0 16px 16px }
+.orb-ii { width: 26px; height: 26px; border-radius: 9px; background: var(--blue-s); color: var(--blue);
+          display: grid; place-items: center; flex-shrink: 0 }
+.orb-it { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--ink-2);
+          overflow-wrap: break-word }
+.orb-ik { display: block; font-size: 10px; font-weight: 600; color: var(--ink-3);
+          font-family: var(--mono); margin-top: 1px }
+
 .legend {
   display: flex; align-items: center; justify-content: center;
   flex-wrap: wrap; gap: 6px 16px;
@@ -824,13 +852,105 @@ const ORBIT_ICO = {
   play:  '<circle cx="12" cy="12" r="9.2"/><path d="M10 8.5l6 3.5-6 3.5v-7z"/>',
   db:    '<ellipse cx="12" cy="5.5" rx="8.2" ry="3"/><path d="M3.8 5.5v13c0 1.66 3.67 3 8.2 3s8.2-1.34 8.2-3v-13"/><path d="M3.8 12c0 1.66 3.67 3 8.2 3s8.2-1.34 8.2-3"/>',
   bot:   '<rect x="3.5" y="8" width="17" height="12" rx="3.5"/><path d="M12 8V4.5M8.5 14h.01M15.5 14h.01"/><circle cx="12" cy="3" r="1.5"/>',
+  chev:  '<path d="M9 5l7 7-7 7"/>',
 };
 const svgOrbitIco = (k, size = 15, sw = 1.8) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor"
      stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ORBIT_ICO[k] || ORBIT_ICO.grid}</svg>`;
 
+/* Orbita qaysi kenglikdan boshlab sig'maydi. Hisob: markazning radiusi
+   (62) va kartaning yarmi (67) qo'shilib, karta markazdan kamida 129 px
+   narida turishi kerak; shu bilan birga ekran chetiga urilmasligi kerak.
+   560 px dan tor ekranda bu ikkisi birga bajarilmaydi. */
+const TOR = () => window.innerWidth <= 560;
+
+/* Guruhning ichidagi loyihalar — ro'yxat ko'rinishi uchun. */
+function orbitQator(g) {
+  return g.items.map((it) => {
+    const r = it.raw || {};
+    const belgi = r.kalit ? `data-loyiha="${esc(r.kalit)}"`
+      : r.kind === 'agent' ? `data-agent="${esc(r.nom)}"`
+      : `data-xona="${esc(g.id)}"`;
+    return `<div class="orb-i" ${belgi} role="button" tabindex="0">
+      <span class="orb-ii">${svgOrbitIco(it.ik, 14)}</span>
+      <span class="orb-it">${esc(it.t)}<span class="orb-ik">${esc(it.k)}</span></span>
+      <span class="orb-d d-${it.s}"></span>
+    </div>`;
+  }).join('');
+}
+
+/*
+ * Telefon ko'rinishi: aylana o'rniga yig'iladigan ro'yxat. Bosilganda
+ * guruh ochiladi, loyihaga bosilsa — o'sha loyiha sahifasi (bosish
+ * `main` dagi umumiy ishlov beruvchiga tushadi, data-loyiha orqali).
+ */
+function orbitRoyxatKor(GURUHLAR) {
+  main.innerHTML = `
+    <div class="h-top">
+      <div>
+        <div class="crumb">DIMON AGENCY</div>
+        <h1 class="h-tit">Loyihalar</h1>
+        <p class="h-sub">Bo'limga bosing — ichidagi loyihalar ochiladi</p>
+      </div>
+    </div>
+    <div class="orb-l">
+      ${GURUHLAR.map((g) => `
+        <section class="orb-g">
+          <button class="orb-b" type="button" aria-expanded="false" data-guruh="${esc(g.id)}">
+            <span class="orb-ico" style="background:${RANG[g.id] ?? '#6c4ef0'}">${svgOrbitIco(g.icon, 17)}</span>
+            <span class="orb-txt"><span class="orb-n">${esc(g.name)}</span>
+              <span class="orb-s">${esc(g.sub)}</span></span>
+            <span class="orb-d d-${g.status}"></span>
+            <span class="orb-ch">${svgOrbitIco('chev', 15)}</span>
+          </button>
+          <div class="orb-items" hidden>${orbitQator(g)}</div>
+        </section>`).join('')}
+    </div>
+    <div class="legend">
+      <span class="lg"><i style="background:var(--ok)"></i>Ishlayapti</span>
+      <span class="lg"><i style="background:var(--warn)"></i>Sekin / ogohlantirish</span>
+      <span class="lg"><i style="background:var(--err)"></i>Ishlamayapti</span>
+    </div>`;
+
+  for (const b of main.querySelectorAll('.orb-b')) {
+    b.addEventListener('click', () => {
+      const ochiq = b.getAttribute('aria-expanded') === 'true';
+      b.setAttribute('aria-expanded', String(!ochiq));
+      b.nextElementSibling.hidden = ochiq;
+    });
+  }
+}
+
+/* Ekran kengligi chegaradan o'tib ketsa ko'rinishni qayta quramiz —
+   telefonni yon tomonga burganda ham to'g'ri ko'rinsin. */
+let orbitTor = null;
+addEventListener('resize', () => {
+  if (kor.turi !== 'orbit') return;
+  if (orbitTor === TOR()) return;
+  chiz();
+});
+
 function orbitKor() {
   if (orbitAnimId) { cancelAnimationFrame(orbitAnimId); orbitAnimId = null; }
+  orbitTor = TOR();
+
+  const GROUPS = (BINO && BINO.length ? BINO : []).map((x) => ({
+    id: x.id,
+    name: x.nom,
+    sub: `${x.items.length} ta loyiha`,
+    icon: x.id === 'agentlar' ? 'cpu' : x.id === 'kgf' ? 'zap' : x.id === 'crm' ? 'users' : x.id === 'subtitr' ? 'caps' : x.id === 'tur' ? 'send' : 'panel',
+    status: holatOf(x),
+    items: x.items.map((it) => ({
+      t: it.nom,
+      k: it.kind || it.target || '',
+      ik: it.kind === 'http' ? 'globe' : it.kind === 'docker' ? 'bot' : it.kind === 'agent' ? 'crown' : 'panel',
+      s: it.status || 'ok',
+      raw: it
+    }))
+  }));
+
+  // Tor ekranda aylana o'rniga ro'yxat — sabab TOR() yonida yozilgan
+  if (orbitTor) return orbitRoyxatKor(GROUPS);
 
   main.innerHTML = `
     <div class="h-top">
@@ -876,21 +996,6 @@ function orbitKor() {
   const crumb = document.getElementById('crumb');
   const hintT = document.getElementById('hint-t');
   const btnPause = document.getElementById('btn-pause');
-
-  const GROUPS = (BINO && BINO.length ? BINO : []).map((x) => ({
-    id: x.id,
-    name: x.nom,
-    sub: `${x.items.length} ta loyiha`,
-    icon: x.id === 'agentlar' ? 'cpu' : x.id === 'kgf' ? 'zap' : x.id === 'crm' ? 'users' : x.id === 'subtitr' ? 'caps' : x.id === 'tur' ? 'send' : 'panel',
-    status: holatOf(x),
-    items: x.items.map((it) => ({
-      t: it.nom,
-      k: it.kind || it.target || '',
-      ik: it.kind === 'http' ? 'globe' : it.kind === 'docker' ? 'bot' : it.kind === 'agent' ? 'crown' : 'panel',
-      s: it.status || 'ok',
-      raw: it
-    }))
-  }));
 
   const NS = 'http://www.w3.org/2000/svg';
   const sv = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
