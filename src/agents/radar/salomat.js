@@ -16,7 +16,7 @@ import { promisify } from 'node:util';
 import os from 'node:os';
 import tls from 'node:tls';
 import { config } from '../../core/config.js';
-import { listProjects, msOraliq } from '../../core/db.js';
+import { listProjects, msOraliq, kvOl, kvQoy } from '../../core/db.js';
 import { log } from '../../core/logger.js';
 
 const run = promisify(execFile);
@@ -56,6 +56,33 @@ async function meminfo() {
   return olch;
 }
 
+/*
+ * Oxirgi tekshiruvdan beri qancha sahifa diskka yozilgani. /proc/vmstat
+ * dagi pswpout — yuklanganidan beri jami, shuning uchun oldingi o'lchov
+ * bazada saqlanadi va farqi olinadi. Server qayta yuklangan bo'lsa sanoq
+ * nolga tushadi — o'sha o'lchov tashlab yuboriladi.
+ */
+async function swapTezligi() {
+  const SAHIFA_KB = 4;
+  try {
+    const matn = await readFile('/proc/vmstat', 'utf8');
+    const m = matn.match(/^pswpout (\d+)$/m);
+    if (!m) return null;
+    const hozir = { sahifa: Number(m[1]), at: Date.now() };
+
+    const xom = kvOl('rita:swap');
+    kvQoy('rita:swap', JSON.stringify(hozir));
+    if (!xom) return null;                       // birinchi o'lchov — solishtirishga asos yo'q
+
+    const oldin = JSON.parse(xom);
+    const daqiqa = (hozir.at - oldin.at) / 60_000;
+    if (!(daqiqa > 0) || hozir.sahifa < oldin.sahifa) return null;
+    return { kbDaqiqa: ((hozir.sahifa - oldin.sahifa) * SAHIFA_KB) / daqiqa };
+  } catch {
+    return null;
+  }
+}
+
 export async function serverHolati() {
   const s = config.salomat;
   const chiq = [];
@@ -88,15 +115,43 @@ export async function serverHolati() {
         matn: `${foiz}% band — ${gb(m.MemAvailable)} GB bo'sh (${gb(m.MemTotal)} GB dan)`,
       });
     }
-    // Swap — diskdagi zaxira xotira. To'lib qolsa server sekinlashadi.
+    /*
+     * Swap — diskdagi zaxira xotira.
+     *
+     * Dastlab "88% band bo'lsa ogohlantirish" deb yozilgan edi va birinchi
+     * kuniyoq bo'sh joyga ogohlantirish berdi: serverda 1.7 GB bo'sh xotira
+     * bor, protsessor 99% bo'sh turgan edi. Sabab — Linux 12 kun davomida
+     * ishlatilmayotgan sahifalarni diskka surib qo'ygan. Bu zarar emas,
+     * aksincha, shuning uchun swap bor.
+     *
+     * Haqiqiy muammo ikki holatda bo'ladi:
+     *   1) swap to'lgan VA operativ xotira ham tugab qolgan — keyingi
+     *      qadam dasturni o'ldirish;
+     *   2) tizim sahifalarni diskka tinmay yozyapti — server shu paytda
+     *      sezilarli sekinlashadi.
+     * Ikkalasi ham yo'q bo'lsa, foiz qanchaligidan qat'i nazar jim turamiz.
+     */
     if (m.SwapTotal > 0) {
       const foiz = Math.round((1 - m.SwapFree / m.SwapTotal) * 100);
+      const ram = chiq.find((x) => x.kalit === 'ram');
+      const siqiq = foiz >= s.swapWarn && ram && ram.status !== 'ok';
+      const tezlik = await swapTezligi();
+
+      const status = siqiq || (tezlik && tezlik.kbDaqiqa >= s.swapOqim) ? 'warn' : 'ok';
+      const izoh = siqiq
+        ? ' — operativ xotira ham tugayapti'
+        : tezlik && tezlik.kbDaqiqa >= s.swapOqim
+          ? ` — daqiqasiga ${Math.round(tezlik.kbDaqiqa)} KB diskka yozilyapti`
+          : foiz >= s.swapWarn
+            ? ' — ishlatilmayotgan sahifalar, muammo emas'
+            : '';
+
       chiq.push({
         kalit: 'swap',
         nom: 'Zaxira xotira (swap)',
-        status: foiz >= s.swapWarn ? 'warn' : 'ok',
+        status,
         foiz,
-        matn: `${foiz}% band — ${gb(m.SwapTotal - m.SwapFree)} GB ishlatilgan`,
+        matn: `${foiz}% band — ${gb(m.SwapTotal - m.SwapFree)} GB ishlatilgan${izoh}`,
       });
     }
   } catch (e) {

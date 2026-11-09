@@ -123,7 +123,12 @@ export const config = {
     diskErr: num('DISK_ERR', 90),
     ramWarn: num('RAM_WARN', 85),
     ramErr: num('RAM_ERR', 94),
+    // Swap foizining o'zi ogohlantirish uchun asos emas: Linux ishlatilmayotgan
+    // sahifalarni bo'sh xotira bo'lsa ham diskka suradi. Shuning uchun bu
+    // chegara faqat operativ xotira ham tugaganda hisobga olinadi.
     swapWarn: num('SWAP_WARN', 80),
+    // Daqiqasiga shuncha KB diskka yozilsa — tizim haqiqatan qiynalyapti
+    swapOqim: num('SWAP_OQIM_KB', 1024),
     // Yadroga nisbatan yuk: 1 — hamma yadro to'la band, 2 — navbat ikki barobar
     yukWarn: num('YUK_WARN', 2),
 
