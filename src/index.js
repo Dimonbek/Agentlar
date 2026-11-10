@@ -48,6 +48,33 @@ else log.info('Sara 🔎 dam olmoqda — xatoliklar nazorati o\'chirilgan');
 if (config.web.enabled) startWeb();
 else log.info('Ofis sahifasi o\'chirilgan (ENABLE_WEB=0)');
 
+/*
+ * Botni tinglashga qo'yadi.
+ *
+ * "tinglayapti" yozuvi `onLaunch` ichida — ya'ni tinglash haqiqatan
+ * boshlangandan keyin. Ilgari u launch dan keyin shartsiz yozilardi:
+ * serverning tarmog'i bir lahzaga uzilib, Rita umuman ishga tushmagan
+ * paytda ham jurnalda "Rita tinglayapti" deb turgan, muammo esa faqat
+ * guruhda javob kelmaganidan bilingan.
+ *
+ * Shuning uchun xato bo'lsa qayta uriniladi — bunday uzilish odatda
+ * server endi ko'tarilayotganda, bir necha soniyaga bo'ladi.
+ */
+function ishgaTushir(bot, persona, opts, extra, urinish = 1) {
+  const KUT = 15_000;
+  const ENG_KOP = 5;
+  bot.launch(opts, () => {
+    log.info(`${persona.name} ${persona.emoji} tinglayapti (${persona.role})${extra}`);
+  }).catch((e) => {
+    log.error(`${persona.name} tinglay olmadi (${urinish}/${ENG_KOP}): ${e.message}`);
+    if (urinish < ENG_KOP) {
+      setTimeout(() => ishgaTushir(bot, persona, opts, extra, urinish + 1), KUT);
+    } else {
+      log.error(`${persona.name} guruhni tinglamaydi — xizmatni qayta ishga tushiring`);
+    }
+  });
+}
+
 // 6. Interaktiv suhbat — faqat faol agentlar guruhni tinglaydi
 const bots = [];
 if (config.chat.enabled && config.chat.groupChatId) {
@@ -67,10 +94,9 @@ if (config.chat.enabled && config.chat.groupChatId) {
       launchOpts.allowedUpdates = BUSINESS_UPDATES;
     }
 
-    bot.launch(launchOpts).catch((e) => log.error(`${persona.name} launch xato:`, e.message));
     bots.push(bot);
     const extra = persona.agent === 'kotib' ? ' + Business (lichka)' : '';
-    log.info(`${persona.name} ${persona.emoji} tinglayapti (${persona.role})${extra}`);
+    ishgaTushir(bot, persona, launchOpts, extra);
   }
   if (!config.gemini.apiKey) {
     log.warn('GEMINI_API_KEY yo\'q — ovozli xabarlar tushunilmaydi (faqat matn)');
