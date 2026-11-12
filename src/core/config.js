@@ -195,6 +195,15 @@ export const config = {
       /H3_REQUEST_CANCELLED|REQUEST_CANCELLED/i,
       /aborting with incomplete response/i,
       /client canceled|context canceled|broken pipe/i,
+      // Caddy avtomatik qayta urinadigan ACME/SSL so'rovlari (o'zi 1 soniyada hal qiladi)
+      /http\.acme_client.*retrying/i,
+      /HTTP request failed; retrying/i,
+      /Client\.Timeout exceeded while awaiting headers/i,
+      // Foydalanuvchi sahifani yopganda yoki boshqa joyga o'tgandagi oqim uzilishlari
+      /Controller is already closed/i,
+      /ERR_INVALID_STATE/i,
+      // Yangilanishdan keyin eski brauzer keshidan kelgan so'rovlar (zararsiz)
+      /Failed to find Server Action/i,
     ],
   },
 
