@@ -189,6 +189,33 @@ h1 { font-size: 34px; font-weight: 800; letter-spacing: -.035em; margin-top: 4px
 .r-m { margin-left: auto; text-align: right; flex-shrink: 0 }
 .r-ms { display: block; font-family: var(--mono); font-size: 10px; color: var(--ink-3); margin-top: 4px }
 
+.r-link-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--blue-s); color: var(--blue); border: 1px solid rgba(108,78,240,.2);
+  border-radius: 999px; padding: 4px 11px; font-size: 11.5px; font-weight: 700;
+  text-decoration: none; transition: background .15s, color .15s, transform .15s; flex-shrink: 0;
+}
+.r-link-btn:hover { background: var(--blue); color: #fff; transform: translateY(-1px) }
+.sub-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px }
+.sub-chip {
+  display: inline-flex; align-items: center; gap: 5px; background: #eef1f8;
+  border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 600; color: var(--ink-2);
+}
+.sub-chip i { width: 6px; height: 6px; border-radius: 50%; display: inline-block }
+.infra-hdr {
+  font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--ink-3); padding: 12px 20px 6px; background: #faf9ff; border-top: 1px solid var(--line);
+}
+.bogliq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 10px }
+.bogliq-k {
+  background: #f8f8fd; border: 1px solid var(--line); border-radius: 14px;
+  padding: 13px 15px; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.bogliq-k:hover { border-color: var(--blue); box-shadow: var(--sh); transform: translateY(-2px) }
+.bogliq-t { display: flex; align-items: center; justify-content: space-between; gap: 8px }
+.bogliq-n { font-weight: 700; font-size: 13px }
+.bogliq-s { font-size: 11px; color: var(--ink-3); font-family: var(--mono); margin-top: 4px; word-break: break-all }
+
 .mini { display: flex; align-items: center; gap: 11px; padding: 11px 13px; border-radius: 14px;
         background: #f8f8fd; cursor: pointer; margin-bottom: 9px }
 .mini:hover { background: var(--blue-s) }
@@ -694,17 +721,87 @@ function agentKarta(i) {
 
 /** Oddiy bo'limlar uchun loyiha ro'yxati. */
 function loyihaRoyxati(x, rang) {
+  if (x.id === 'infra') {
+    const KATEGORIYALAR = [
+      {
+        nom: 'Tarmoq va Shlyuz (Reverse Proxy)',
+        items: x.items.filter(i => i.kalit === 'c-caddy')
+      },
+      {
+        nom: 'Dastur va Veb Serverlar (Docker)',
+        items: x.items.filter(i => ['c-kgf-web', 'c-subtitr', 'c-xarajat'].includes(i.kalit))
+      },
+      {
+        nom: 'Ma’lumotlar bazasi (PostgreSQL)',
+        items: x.items.filter(i => i.kalit === 'c-kgf-db')
+      },
+      {
+        nom: 'Pochta va Xabarlar xizmati',
+        items: x.items.filter(i => i.kalit === 'c-kgf-mail')
+      },
+      {
+        nom: 'Boshqa xizmatlar',
+        items: x.items.filter(i => !['c-caddy', 'c-kgf-web', 'c-subtitr', 'c-xarajat', 'c-kgf-db', 'c-kgf-mail'].includes(i.kalit))
+      }
+    ].filter(cat => cat.items.length > 0);
+
+    return `
+      <div class="panel">
+        <div class="panel-h">${svg(ICO[x.id] ?? ICO.infra, rang, 17)} Infratuzilma xizmatlari (Docker, Baza, Server)</div>
+        ${KATEGORIYALAR.map(cat => `
+          <div class="infra-hdr">${esc(cat.nom)}</div>
+          ${cat.items.map(i => `
+            <div class="r" ${i.kalit ? `data-loyiha="${esc(i.kalit)}" tabindex="0" role="button"` : ''}>
+              <i class="d-${i.status}"></i>
+              <span style="min-width:0;flex:1">
+                <span style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+                  <span class="r-n">${esc(i.nom)}</span>
+                  ${i.egasi ? `<span class="sub-chip" style="background:#e0e7ff;color:#3730a3">Loyiha: ${esc(i.egasi.nom)}</span>` : ''}
+                </span>
+                <span class="r-t">${esc(i.target)}</span>
+              </span>
+              <span class="r-m">
+                <span class="pill b-${i.status}">${SNOM[i.status] ?? i.status}</span>
+                <span class="r-ms">${(KIND[i.kind] ?? i.kind)}${i.http ? ' · ' + i.http : ''}${i.ms != null ? ' · ' + i.ms + 'ms' : ''}</span>
+              </span>
+            </div>
+          `).join('')}
+        `).join('')}
+      </div>`;
+  }
+
   return `
     <div class="panel">
-      <div class="panel-h">${svg(ICO[x.id] ?? ICO.infra, rang, 17)} Loyihalar — birini bosing</div>
+      <div class="panel-h">${svg(ICO[x.id] ?? ICO.infra, rang, 17)} Loyihalar va Botlar (${x.items.length} ta)</div>
       ${x.items.map((i) => `
         <div class="r" ${i.kalit ? `data-loyiha="${esc(i.kalit)}" tabindex="0" role="button"` : ''}>
           <i class="d-${i.status}"></i>
-          <span style="min-width:0"><span class="r-n">${esc(i.nom)}</span><br>
-            <span class="r-t">${esc(i.target)}</span></span>
-          <span class="r-m"><span class="pill b-${i.status}">${SNOM[i.status] ?? i.status}</span>
+          <span style="min-width:0;flex:1">
+            <span style="display:flex;align-items:center;flex-wrap:wrap;gap:8px">
+              <span class="r-n">${esc(i.nom)}</span>
+              ${i.havola ? `
+                <a class="r-link-btn" href="${esc(i.havola)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+                  ${svg('<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/>', 'currentColor', 11)}
+                  ${i.havola.includes('t.me') ? 'Botni ochish ↗' : 'Saytni ochish ↗'}
+                </a>` : ''}
+            </span>
+            <span class="r-t">${esc(i.havola || i.target)}</span>
+            ${i.tarkib && i.tarkib.length ? `
+              <div class="sub-chips">
+                ${i.tarkib.map(tk => {
+                  const sub = loyihaTop(tk.kalit);
+                  const st = sub?.it?.status ?? 'ok';
+                  return `<span class="sub-chip" title="${esc(tk.nom)}: ${esc(tk.target)}">
+                    <i class="d-${st}"></i> ${esc(tk.nom)}
+                  </span>`;
+                }).join('')}
+              </div>` : ''}
+          </span>
+          <span class="r-m">
+            <span class="pill b-${i.status}">${SNOM[i.status] ?? i.status}</span>
             <span class="r-ms">${(KIND[i.kind] ?? i.kind)}${i.http ? ' · ' + i.http : ''}${i.ms != null ? ' · ' + i.ms + 'ms' : ''}</span>
-          </span></div>`).join('')}
+          </span>
+        </div>`).join('')}
     </div>`;
 }
 
@@ -733,8 +830,9 @@ function loyihaKor(kalit) {
           ${it.havola
             ? `<a class="link" href="${esc(it.havola)}" target="_blank" rel="noopener">
                  ${svg('<path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><path d="M15 3h6v6"/><path d="M10 14L21 3"/>', 'currentColor', 13)}
-                 Saytni ochish</a>`
+                 ${it.havola.includes('t.me') ? 'Telegram botni ochish' : 'Saytni ochish'}</a>`
             : `<span class="pill b-ochiq" style="font-family:var(--mono);font-size:10.5px">${esc(it.target)}</span>`}
+          ${it.egasi ? `<span class="pill" style="background:#e0e7ff;color:#3730a3">Tegishli loyiha: ${esc(it.egasi.nom)}</span>` : ''}
         </div></div></div>
 
     <div class="kolon">
@@ -766,6 +864,52 @@ function loyihaKor(kalit) {
               ? `<div style="margin-top:12px;font-size:12.5px;color:var(--ink-2)">
                    Oxirgi marta ishlagan: <b>${muddat(Date.now() - it.oxirgiOk)}</b> oldin</div>` : ''}
           </div></div>
+
+        ${it.tarkib && it.tarkib.length ? `
+          <div class="panel">
+            <div class="panel-h">${svg('<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>', rang, 17)} Loyiha infratuzilmasi va serverlari</div>
+            <div class="panel-b">
+              <div style="font-size:13px;color:var(--ink-2);margin-bottom:12px">
+                Ushbu loyihaga bog'langan Docker konteynerlar, ma’lumotlar bazasi va pochta xizmatlari:
+              </div>
+              <div class="bogliq-grid">
+                ${it.tarkib.map(tk => {
+                  const sub = loyihaTop(tk.kalit);
+                  const subIt = sub?.it;
+                  const subStat = subIt?.status ?? 'ok';
+                  return `
+                    <div class="bogliq-k" ${sub ? `data-loyiha="${esc(tk.kalit)}" tabindex="0" role="button"` : ''}>
+                      <div class="bogliq-t">
+                        <span class="bogliq-n">${esc(tk.nom)}</span>
+                        <span class="pill b-${subStat}">${SNOM[subStat] ?? subStat}</span>
+                      </div>
+                      <div class="bogliq-s">Docker: ${esc(tk.target)}</div>
+                      ${subIt?.ms != null ? `<div style="font-size:11px;color:var(--ink-3);margin-top:6px">Javob vaqti: <b>${subIt.ms} ms</b></div>` : ''}
+                      <div style="margin-top:9px;font-size:11.5px;color:var(--blue);font-weight:700">Infratuzilmani ko‘rish →</div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        ${it.egasi ? `
+          <div class="panel">
+            <div class="panel-h">${svg('<path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>', rang, 17)} Tegishli Asosiy Loyiha</div>
+            <div class="panel-b">
+              <div style="font-size:13.5px;color:var(--ink-2);line-height:1.6">
+                Ushbu infratuzilma xizmati <b>${esc(it.egasi.nom)}</b> loyihasining <b>${esc(it.egasi.rol)}</b> qismi hisoblanadi.
+              </div>
+              ${it.egasi.kalit ? `
+                <div style="margin-top:14px">
+                  <button class="c-btn" type="button" data-loyiha="${esc(it.egasi.kalit)}">
+                    ${esc(it.egasi.nom)} loyihasiga o‘tish →
+                  </button>
+                </div>` : ''}
+            </div>
+          </div>
+        ` : ''}
 
         <div class="panel">
           <div class="panel-h">${svg('<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/>', rang, 17)} To‘lovlar</div>

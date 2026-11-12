@@ -1,0 +1,42 @@
+[
+  {
+    "kalit": "tel-7007",
+    "nom": "7007 raqami to'lovi",
+    "summa": 70000,
+    "valyuta": "so'm",
+    "sana": "2026-11-14",
+    "davr": "oylik",
+    "grp": "aloqa",
+    "izoh": "7007 telefon raqami oylik to'lovi"
+  },
+  {
+    "kalit": "wifi-uy",
+    "nom": "Uydagi Wi-Fi to'lovi",
+    "summa": 200000,
+    "valyuta": "so'm",
+    "sana": "2026-11-18",
+    "davr": "oylik",
+    "grp": "uy",
+    "izoh": "Uy interneti / Wi-Fi to'lovi"
+  },
+  {
+    "kalit": "vps",
+    "nom": "VPS server obunasi",
+    "summa": 200000,
+    "valyuta": "so'm",
+    "sana": "2026-11-28",
+    "davr": "oylik",
+    "grp": "infra",
+    "izoh": "Asosiy VPS server to'lovi"
+  },
+  {
+    "kalit": "claude-pro",
+    "nom": "Claude AI Pro",
+    "summa": 20,
+    "valyuta": "$",
+    "sana": "2026-12-09",
+    "davr": "oylik",
+    "grp": "ai",
+    "izoh": "Anthropic Claude Pro obunasi (to'lov kuni real vaqtda MB kursi bo'yicha so'mda hisoblanadi)"
+  }
+]

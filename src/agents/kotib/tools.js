@@ -88,6 +88,14 @@ export const debraTools = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'get_team_status',
+    description:
+      "Barcha 4 ta agent domeni (Debra: CRM/KGF, Layla: Infratuzilma/To'lovlar, Rita: Turizm, Sara: Subtitr/Xavfsizlik) " +
+      "bo'yicha to'liq jamlangan jamoa va loyihalar holatini oladi. 'Jamoa qalay?', 'barcha loyihalar holati qanday?', 'har bir agent nima qilyapti?' " +
+      "so'rovlarida ishlatiladi.",
+    input_schema: { type: 'object', properties: {}, required: [], additionalProperties: false },
+  },
 ];
 
 function periodRange(period) {
@@ -166,6 +174,20 @@ export async function runDebraTool(name, input, { bot, auth } = {}) {
     } catch (e) {
       return `Railway'ga ulanib bo'lmadi: ${e.message}`;
     }
+  }
+
+  if (name === 'get_team_status') {
+    const { getDebraDomainStatus, getLaylaDomainStatus, getRitaDomainStatus, getSaraDomainStatus } = await import('./briefing.js');
+    const debra = getDebraDomainStatus();
+    const layla = await getLaylaDomainStatus();
+    const rita = getRitaDomainStatus();
+    const sara = getSaraDomainStatus();
+    return {
+      debra,
+      layla,
+      rita,
+      sara,
+    };
   }
 
   if (name === 'stop_project') {

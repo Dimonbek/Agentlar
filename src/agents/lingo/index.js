@@ -8,6 +8,7 @@ import {
   kvOl, kvQoy, logRun,
 } from '../../core/db.js';
 import { log } from '../../core/logger.js';
+import { formatPul } from '../../core/valyuta.js';
 
 const { send } = createSender({
   token: config.chat.tokens.layla || '',
@@ -89,11 +90,12 @@ export async function tekshir() {
     const kalit = `tolov:${o.kalit}:${o.sana}:${bosqich}`;
     if (kvOl(kalit)) continue;                    // bu bosqich allaqachon aytilgan
 
+    const pulMatn = await formatPul(o);
     const matn = qoldi > 0
       ? `💳 <b>${esc(o.nom)}</b> to'loviga <b>${qoldi} kun</b> qoldi\n` +
-        `${pul(o)} · ${sanaMatn(o.sana)}${o.izoh ? `\n<i>${esc(o.izoh)}</i>` : ''}`
+        `${pulMatn} · ${sanaMatn(o.sana)}${o.izoh ? `\n<i>${esc(o.izoh)}</i>` : ''}`
       : `🔴 <b>${esc(o.nom)}</b> to'lovi <b>${Math.abs(qoldi) === 0 ? 'bugun' : Math.abs(qoldi) + ' kun oldin'}</b> edi\n` +
-        `${pul(o)} · ${sanaMatn(o.sana)}\nTo'laganingizdan keyin sanani yangilang.`;
+        `${pulMatn} · ${sanaMatn(o.sana)}\nTo'laganingizdan keyin sanani yangilang.`;
 
     await send(matn).catch((e) => log.error('Layla xabar yubora olmadi:', e.message));
     kvQoy(kalit, Date.now());

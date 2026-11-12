@@ -7,10 +7,12 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "test": "node --test test/*.test.js",
     "rita:ping": "node src/index.js --once=rita:ping",
     "rita:salomat": "node src/index.js --once=rita:salomat",
     "layla:tekshir": "node src/index.js --once=layla:tekshir",
     "debra:kunlik": "node src/index.js --once=debra:kunlik",
+    "debra:briefing": "node src/index.js --once=debra:briefing",
     "debra:haftalik": "node src/index.js --once=debra:haftalik"
   },
   "engines": {

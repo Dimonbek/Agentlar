@@ -1,0 +1,134 @@
+[
+  {
+    "key": "subtitr-web",
+    "name": "subtitr.uz",
+    "grp": "subtitr",
+    "kind": "http",
+    "target": "https://subtitr.uz"
+  },
+  {
+    "key": "c-subtitr",
+    "name": "subtitr.uz server",
+    "grp": "infra",
+    "kind": "docker",
+    "target": "subtitr"
+  },
+  {
+    "key": "kgf-web",
+    "name": "kokandgoldfuture.uz",
+    "grp": "kgf",
+    "kind": "http",
+    "target": "https://kokandgoldfuture.uz"
+  },
+  {
+    "key": "c-kgf-web",
+    "name": "kokandgoldfuture.uz server",
+    "grp": "infra",
+    "kind": "docker",
+    "target": "zavod-hr-web-1"
+  },
+  {
+    "key": "c-kgf-db",
+    "name": "kokandgoldfuture.uz baza",
+    "grp": "infra",
+    "kind": "docker",
+    "target": "zavod-hr-db-1"
+  },
+  {
+    "key": "c-kgf-mail",
+    "name": "kokandgoldfuture.uz pochta",
+    "grp": "infra",
+    "kind": "docker",
+    "target": "zavod-hr-mail-worker-1"
+  },
+  {
+    "key": "c-resume",
+    "name": "KGFHR bot",
+    "grp": "kgf",
+    "kind": "docker",
+    "target": "kgf-resume-bot"
+  },
+  {
+    "key": "c-hisobot",
+    "name": "Hisobot kunlik",
+    "grp": "kgf",
+    "kind": "docker",
+    "target": "hisobot-kunlik-bot"
+  },
+  {
+    "key": "xarajat-web",
+    "name": "Xarajat",
+    "grp": "kgf",
+    "kind": "http",
+    "target": "https://45-92-173-191.sslip.io"
+  },
+  {
+    "key": "c-xarajat",
+    "name": "Xarajat server",
+    "grp": "infra",
+    "kind": "docker",
+    "target": "xarajat-app-1"
+  },
+  {
+    "_izoh": "Panel parol so'raydi — 401 sog'lom javob",
+    "key": "yuznazorat",
+    "name": "Yuznazorat panel",
+    "grp": "kgf",
+    "kind": "http",
+    "target": "http://127.0.0.1:4100/",
+    "expect": "200-399,401"
+  },
+  {
+    "key": "c-rivatour",
+    "name": "Riva Tour",
+    "grp": "tur",
+    "kind": "docker",
+    "target": "riva-tour-bot"
+  },
+  {
+    "key": "c-zuhro",
+    "name": "Zuhro Travel",
+    "grp": "tur",
+    "kind": "docker",
+    "target": "zuhro-travel-bot"
+  },
+  {
+    "key": "c-dilrabo",
+    "name": "Dilrabo",
+    "grp": "tur",
+    "kind": "docker",
+    "target": "dilrabo-bot"
+  },
+  {
+    "key": "exotic-bot",
+    "name": "Exotic Tour bot",
+    "grp": "tur",
+    "kind": "docker",
+    "target": "exotic-tour-bot"
+  },
+  {
+    "_izoh": "Railway'da. Ildiz yo'li yo'q (404), lekin javob bersa tirik",
+    "key": "crm",
+    "name": "DimoCRM",
+    "grp": "crm",
+    "kind": "http",
+    "target": "https://crm-production-b0de.up.railway.app/",
+    "expect": "200-399,404"
+  },
+  {
+    "key": "exotic-crm",
+    "name": "Exotic CRM",
+    "grp": "crm",
+    "kind": "http",
+    "target": "https://crm.45-92-173-191.sslip.io",
+    "expect": "200-399,404"
+  },
+  {
+    "_izoh": "Yiqilsa BARCHA saytlar o'chadi",
+    "key": "c-caddy",
+    "name": "Caddy (kirish)",
+    "grp": "infra",
+    "kind": "docker",
+    "target": "xarajat-caddy-1"
+  }
+]

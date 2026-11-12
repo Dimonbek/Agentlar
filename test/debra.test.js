@@ -11,7 +11,8 @@ const { relayMessage } = await import('../src/agents/kotib/relay.js');
 const { attachBusiness } = await import('../src/agents/kotib/business.js');
 const { attachPrivateApproval, proposePrivateMessage } = await import('../src/agents/kotib/approval.js');
 const { saveBizConn, saveBizContact, getBizContacts } = await import('../src/core/db.js');
-const { runDebraTool } = await import('../src/agents/kotib/tools.js');
+const { runDebraTool, debraTools } = await import('../src/agents/kotib/tools.js');
+const { runCoordinatorBriefing, getDebraDomainStatus, getLaylaDomainStatus, getRitaDomainStatus, getSaraDomainStatus } = await import('../src/agents/kotib/briefing.js');
 
 test('captionless media uses original Telegram file IDs; text keeps entities', async () => {
   for (const [kind, method] of Object.entries({ animation: 'sendAnimation', video: 'sendVideo',
@@ -119,4 +120,31 @@ test('only owner may approve exact draft; duplicate/foreign clicks and revoked c
   saveBizConn(42, null);
   await handler(ctx);
   assert.equal(calls.filter(c => c.chat === 7).length, 1);
+});
+
+test('debraTools schema includes get_team_status and runDebraTool handles it', async () => {
+  const toolNames = debraTools.map((t) => t.name);
+  assert.ok(toolNames.includes('get_team_status'));
+
+  const auth = { userId: 42, groupId: '-100' };
+  const status = await runDebraTool('get_team_status', {}, { auth });
+  assert.ok(status.debra);
+  assert.ok(status.layla);
+  assert.ok(status.rita);
+  assert.ok(status.sara);
+
+  assert.equal(status.debra.agent, 'Debra 🗂');
+  assert.equal(status.layla.agent, 'Layla 🏗️💳');
+  assert.equal(status.rita.agent, 'Rita 🛰');
+  assert.equal(status.sara.agent, 'Sara 🔎');
+});
+
+test('runCoordinatorBriefing produces formatted briefing and records to memory', async () => {
+  const result = await runCoordinatorBriefing();
+  assert.equal(result.muvaffaqiyatli, true);
+  assert.match(result.matn, /DIMON Agency — Ertalabki Jamoa Brifingi/);
+  assert.match(result.matn, /Debra/);
+  assert.match(result.matn, /Layla/);
+  assert.match(result.matn, /Rita/);
+  assert.match(result.matn, /Sara/);
 });

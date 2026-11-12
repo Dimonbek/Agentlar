@@ -62,7 +62,7 @@ export const config = {
     cron: process.env.CRON_OBUNA || '0 9 * * *',          // har kuni 09:00
     oylikCron: process.env.CRON_OBUNA_OYLIK || '0 10 1 * *', // har oy 1-sanada
     // Necha kun qolganda eslatilsin (o'tib ketgani doim eslatiladi)
-    kunlar: (process.env.OBUNA_KUNLAR || '7,3,1')
+    kunlar: (process.env.OBUNA_KUNLAR || '3,1')
       .split(',').map((s) => Number(s.trim())).filter(Number.isFinite),
     seedFile: process.env.OBUNA_SEED || 'data/obunalar.json',
   },

@@ -97,23 +97,18 @@ QOIDALAR:
 - Sarlavha YOZMA ("Kunlik hisobot" kabi) — u xabarning boshiga alohida qo'shiladi.
 - 10 qatordan oshmasin.`;
 
-/** Kunlik hisobot — kecha ertalabdan hozirgacha. */
+import { runCoordinatorBriefing } from './briefing.js';
+
+/** Kunlik hisobot — har kuni 08:30 da Debra nomidan jamoa brifingi. */
 export async function kunlikHisobot() {
-  const from = Date.now() - 24 * SOAT;
-  const d = xomMalumot(from);
   try {
-    const matn = await askText({
-      system: USLUB,
-      prompt: `Kunlik hisobot yoz. Quyidagi ma'lumotga tayan:\n\n${matnga(d, from)}`,
-      maxTokens: 900,
-    });
-    await send(`☀️ <b>Ertalabki hisobot</b>\n\n${matn}`);
-    logRun('debra:kunlik', true, `${d.ozgarishlar.length} o'zgarish`);
-    log.info('Debra: kunlik hisobot yuborildi');
+    await runCoordinatorBriefing();
   } catch (e) {
-    // Model ishlamasa ham hisobot ketsin — xom holda bo'lsa ham
-    log.error('Debra kunlik hisobot xatosi:', e.message);
-    await send(`☀️ <b>Ertalabki hisobot</b>\n\n<pre>${esc(matnga(d, from))}</pre>`)
+    log.error('Debra kunlik hisobot (brifing) xatosi:', e.message);
+    // Zaxira sifatida xom ma'lumotni yuborish
+    const from = Date.now() - 24 * SOAT;
+    const d = xomMalumot(from);
+    await send(`☀️ <b>Ertalabki hisobot (zaxira)</b>\n\n<pre>${esc(matnga(d, from))}</pre>`)
       .catch((e2) => log.error('Debra zaxira hisoboti ham ketmadi:', e2.message));
     logRun('debra:kunlik', false, e.message);
   }
@@ -170,6 +165,7 @@ export async function eslatma() {
 
 export const hisobotJobs = {
   'debra:kunlik': kunlikHisobot,
+  'debra:briefing': runCoordinatorBriefing,
   'debra:haftalik': haftalikHisobot,
   'debra:eslatma': eslatma,
 };

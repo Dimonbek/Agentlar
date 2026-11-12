@@ -26,6 +26,52 @@ const GURUH = {
   infra:    { nom: 'INFRA',    izoh: 'umumiy xizmatlar',  rang: '#64748b' },
 };
 
+/** Loyihalar va botlarning to'g'ridan-to'g'ri havolalari */
+const HAVOLALAR = {
+  'kgf-web': 'https://kokandgoldfuture.uz',
+  'xarajat-web': 'https://45-92-173-191.sslip.io',
+  'yuznazorat': 'http://45.92.173.191:4100/',
+  'c-hisobot': 'https://t.me/Hisobotgoldfuturebot',
+  'c-resume': 'https://t.me/kgfhr_bot',
+  'subtitr-web': 'https://subtitr.uz',
+  'crm': 'https://crm-production-b0de.up.railway.app/',
+  'exotic-crm-web': 'https://crm.45-92-173-191.sslip.io',
+  'exotic-crm': 'https://crm.45-92-173-191.sslip.io',
+  'exotic-bot': 'https://t.me/exotictour_bot',
+  'c-rivatour': 'https://t.me/RivaTour_bot',
+  'c-zuhro': 'https://t.me/zukhro_travelbot',
+  'c-dilrabo': 'https://t.me/DilobodaStarTour_bot',
+};
+
+/** Katta loyihalar tarkibidagi bog'langan server, baza va xizmatlar */
+const BOGLANISH = {
+  'kgf-web': [
+    { kalit: 'c-kgf-web', rol: 'server', nom: 'Web Server (Docker)', target: 'zavod-hr-web-1' },
+    { kalit: 'c-kgf-db',  rol: 'baza',   nom: 'Ma’lumotlar bazasi', target: 'zavod-hr-db-1 (PostgreSQL)' },
+    { kalit: 'c-kgf-mail',rol: 'pochta', nom: 'Pochta xizmati',     target: 'zavod-hr-mail-worker-1' },
+  ],
+  'subtitr-web': [
+    { kalit: 'c-subtitr', rol: 'server', nom: 'Web Server (Docker)', target: 'subtitr' },
+  ],
+  'xarajat-web': [
+    { kalit: 'c-xarajat', rol: 'server', nom: 'App Server (Docker)', target: 'xarajat-app-1' },
+  ],
+  'exotic-crm-web': [
+    { kalit: 'exotic-crm', rol: 'server', nom: 'CRM Serveri (Systemd)', target: 'crm' },
+    { kalit: 'exotic-bot', rol: 'bot',    nom: 'Telegram Bot',          target: 'exotic_bot' },
+  ],
+};
+
+/** Infratuzilma xizmatlarining qaysi asosiy loyihaga tegishliligi */
+const EGASI = {
+  'c-kgf-web':  { kalit: 'kgf-web', nom: 'kokandgoldfuture.uz', rol: 'Web server' },
+  'c-kgf-db':   { kalit: 'kgf-web', nom: 'kokandgoldfuture.uz', rol: 'Ma’lumotlar bazasi' },
+  'c-kgf-mail': { kalit: 'kgf-web', nom: 'kokandgoldfuture.uz', rol: 'Pochta xizmati' },
+  'c-subtitr':  { kalit: 'subtitr-web', nom: 'subtitr.uz', rol: 'Web server' },
+  'c-xarajat':  { kalit: 'xarajat-web', nom: 'Xarajat', rol: 'App server' },
+  'c-caddy':    { kalit: null, nom: 'Barcha saytlar (Umumiy shlyuz)', rol: 'Shlyuz (Proxy)' },
+};
+
 /*
  * Agentlar — bazada loyiha sifatida yo'q, chunki ular kuzatilmaydi, kuzatadi.
  * Holat qo'lda yozilmaydi: har agent ishlaganda `runs` jadvaliga yozuv
@@ -112,8 +158,10 @@ function holat() {
       nom: p.name,
       kind: p.kind,
       target: p.target,
-      // HTTP loyihasi bo'lsa ochib ko'rish uchun havola
-      havola: p.kind === 'http' && /^https?:\/\//i.test(p.target) ? p.target : null,
+      // To'g'ridan-to'g'ri havolasi (veb-sayt yoki bot)
+      havola: HAVOLALAR[p.key] ?? (p.kind === 'http' && /^https?:\/\//i.test(p.target) ? p.target : null),
+      tarkib: BOGLANISH[p.key] ?? null,
+      egasi: EGASI[p.key] ?? null,
       status: p.enabled ? p.status : 'ochiq',
       ms: p.ms,
       http: p.http,

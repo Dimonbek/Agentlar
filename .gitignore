@@ -1,7 +1,12 @@
 node_modules/
 .env
-data/
+data/*.db
+data/*.db-journal
+data/*.sqlite
 *.log
+api/
+ofis.html
+orbit.html
 
 # Agent suratlari — shaxsiy, GitHub ga chiqmaydi
 public/avatar/

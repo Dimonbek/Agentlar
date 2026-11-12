@@ -6,6 +6,10 @@ import { respond } from './brain.js';
 import { splitMessage } from './telegram.js';
 import { addHistory, getHistory } from './db.js';
 import { debraTools, runDebraTool } from '../agents/kotib/tools.js';
+import { laylaTools, runLaylaTool } from '../agents/lingo/tools.js';
+import { ritaTools, runRitaTool } from '../agents/radar/tools.js';
+import { saraTools, runSaraTool } from '../agents/sara/tools.js';
+import { memoryTools, runMemoryTool } from './xotira.js';
 import { log } from './logger.js';
 import { attachPrivateApproval, isBusinessOwner } from '../agents/kotib/approval.js';
 
@@ -181,14 +185,42 @@ export function createChatBot(persona, token) {
       const chatId = ctx.chat.id;
       const history = getHistory(persona.agent, chatId, HISTORY_LIMIT);
 
-      // Debra lichka xabarlari va serverlar bazasiga murojaat qila oladi
-      const isDebra = persona.agent === 'kotib';
+      // Har bir agent o'z asboblari + umumiy xotira asboblariga ega
+      let agentTools = [];
+      let runAgentTool = null;
+
+      if (persona.agent === 'kotib') {
+        agentTools = debraTools;
+        runAgentTool = (n, i) => runDebraTool(n, i, { bot, auth: { userId: ctx.from.id, groupId: ctx.chat.id } });
+      } else if (persona.agent === 'lingo') {
+        agentTools = laylaTools;
+        runAgentTool = (n, i) => runLaylaTool(n, i);
+      } else if (persona.agent === 'radar') {
+        agentTools = ritaTools;
+        runAgentTool = (n, i) => runRitaTool(n, i);
+      } else if (persona.agent === 'sara') {
+        agentTools = saraTools;
+        runAgentTool = (n, i) => runSaraTool(n, i);
+      }
+
+      const tools = [...agentTools, ...memoryTools];
+      const agentKey = persona.key || persona.name?.toLowerCase() || persona.agent;
+      const runTool = async (n, i) => {
+        if (memoryTools.some((t) => t.name === n)) {
+          return runMemoryTool(n, i, agentKey);
+        }
+        if (runAgentTool) {
+          return runAgentTool(n, i);
+        }
+        throw new Error(`Asbob topilmadi: ${n}`);
+      };
+
       const answer = await respond({
         persona,
         userText: fullQuery,
         history,
-        tools: isDebra ? debraTools : [],
-        runTool: isDebra ? (n, i) => runDebraTool(n, i, { bot, auth: { userId: ctx.from.id, groupId: ctx.chat.id } }) : null,
+        tools,
+        runTool,
       });
 
       // Xotiraga yozamiz — keyingi safar shu suhbatni eslaydi
