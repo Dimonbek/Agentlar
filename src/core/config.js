@@ -84,6 +84,8 @@ export const config = {
   // Debra — Telegram Business (lichka xabarlari)
   business: {
     autoReply: process.env.BUSINESS_AUTOREPLY === '1',
+    // Bitta mijozga shuncha soatda bir martadan ko'p avto-javob ketmaydi
+    autoReplySoat: num('BUSINESS_AUTOREPLY_SOAT', 6),
     ownerId: Number(process.env.BUSINESS_OWNER_ID) || null,
     autoReplyText:
       process.env.BUSINESS_AUTOREPLY_TEXT ||

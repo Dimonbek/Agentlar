@@ -7,6 +7,8 @@ import {
   saveBizContact,
   saveBizConn,
   getBizConn,
+  canAutoReply,
+  markAutoReply,
 } from '../../core/db.js';
 import { messageLabel, relayMessage } from './relay.js';
 
@@ -84,7 +86,34 @@ export function attachBusiness(bot) {
       }
       log.info(`Debra: lichka xabar yetkazildi (${sender})`);
 
-      // No automatic private replies: the owner must approve each outgoing message.
+      /*
+       * Avtomatik birinchi javob. Faqat shu bitta, oldindan yozilgan matn
+       * ketadi — mazmunli javobni egasi guruhdagi «Yuborish» tugmasi bilan
+       * tasdiqlaydi. Ya'ni Debra odamning o'rniga suhbat qurmaydi, shunchaki
+       * "xabaringiz yetib bordi" deb qo'yadi.
+       *
+       * Bir mijozga bir necha soatda bir marta: ketma-ket besh xabar yozgan
+       * odam beshta bir xil javob olmasin.
+       */
+      if (config.business.autoReply && canAutoReply(m.chat.id, config.business.autoReplySoat)) {
+        if (!(live.rights?.can_reply ?? live.can_reply)) {
+          log.warn('Debra: avtomatik javob ketmadi — Business ulanishda javob huquqi yo\'q');
+        } else {
+          try {
+            await bot.telegram.sendMessage(m.chat.id, config.business.autoReplyText,
+              { business_connection_id: live.id });
+            markAutoReply(m.chat.id);
+            log.info(`Debra: avtomatik javob yuborildi (${sender})`);
+            // Egasi nima ketganini bilib tursin
+            await bot.telegram.sendMessage(config.chat.groupChatId,
+              '🤖 Avtomatik javob yuborildi: <i>xabaringiz yetkazildi</i>',
+              { parse_mode: 'HTML', reply_parameters: { message_id: header.message_id } })
+              .catch(() => {});
+          } catch (e) {
+            log.warn(`Debra: avtomatik javob ketmadi — ${e.message}`);
+          }
+        }
+      }
     } catch (e) {
       log.error('business_message xatosi:', e.message);
     }

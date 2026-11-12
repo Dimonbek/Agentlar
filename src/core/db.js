@@ -253,12 +253,21 @@ const _setAr = db.prepare(
   'INSERT OR REPLACE INTO biz_autoreply (chat_id, last_at) VALUES (?, ?)',
 );
 
-/** Mijozga N soatda bir martadan ko'p avto-javob yubormaslik uchun tekshiruv. */
+/*
+ * Mijozga N soatda bir martadan ko'p avto-javob yubormaslik uchun.
+ *
+ * Tekshirish va belgilash ataylab ajratilgan: ilgari tekshiruvning o'zi
+ * vaqtni yozib qo'yardi, shuning uchun yuborish xato bersa ham mijoz
+ * olti soatga "javob berilgan" deb hisoblanib qolardi.
+ */
 export function canAutoReply(chatId, everyHours = 6) {
   const row = _getAr.get(chatId);
-  if (row && Date.now() - row.last_at < everyHours * 3600_000) return false;
+  return !(row && Date.now() - row.last_at < everyHours * 3600_000);
+}
+
+/** Avto-javob haqiqatan ketgandan keyin chaqiriladi. */
+export function markAutoReply(chatId) {
   _setAr.run(chatId, Date.now());
-  return true;
 }
 
 const _getConn = db.prepare('SELECT owner_id, conn_id FROM biz_conn WHERE id = 1');
