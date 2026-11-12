@@ -1,3 +1,6 @@
+// Qum papka eng yuqorida: statik importlar tartib bilan bajariladi,
+// xotira moduli esa papka yo'lini yuklanishda bir marta o'qiydi.
+import './qum.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {

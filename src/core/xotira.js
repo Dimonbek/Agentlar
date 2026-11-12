@@ -1,7 +1,14 @@
 import { readFileSync, writeFileSync, appendFileSync, existsSync, mkdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 
-const XOTIRA_DIR = resolve('data/xotira');
+/*
+ * Xotira papkasi. Odatda loyihaning data/xotira'si, lekin XOTIRA_DIR
+ * bilan boshqa joyga yo'naltirish mumkin. Bu testlar uchun kerak:
+ * ular ham xuddi shu funksiyalarni chaqiradi va ilgari haqiqiy
+ * pasportlarga "Test aksiyasi" degan yozuvlarni yozib qo'yardi —
+ * natijada har test ishga tushganda git va server ajralib ketardi.
+ */
+const XOTIRA_DIR = resolve(process.env.XOTIRA_DIR || 'data/xotira');
 const LOYIHALAR_DIR = join(XOTIRA_DIR, 'loyihalar');
 const AGENTLAR_DIR = join(XOTIRA_DIR, 'agentlar');
 const TARIX_DIR = join(XOTIRA_DIR, 'tarix');

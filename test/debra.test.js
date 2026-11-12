@@ -1,3 +1,5 @@
+// Brifing xotiraga yozadi — haqiqiy fayllarga tegmasin
+import './qum.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
